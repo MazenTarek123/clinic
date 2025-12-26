@@ -12,7 +12,7 @@ st.markdown("""
 
 st.set_page_config(page_title="Cure & Go | Patient Portal", page_icon="🧑‍🦱", layout="centered")
 
-# ستايل احترافي يشبه موقعك
+# ستايل احترافي
 st.markdown("""
 <style>
     .stApp {background: linear-gradient(to bottom, #f0f9ff, #ffffff);}
@@ -31,7 +31,24 @@ selected_disease = query_params.get("disease", ["General Consultation"])[0]
 
 st.markdown(f"<div class='disease-tag'>Patient Portal - {selected_disease}</div>", unsafe_allow_html=True)
 
-# تهيئة البيانات (نفس اللي في الـ Admin)
+# تعريف كلاس Doctor لو مش موجود
+class Doctor:
+    def __init__(self, doctor_id, name, gender, phone, age, exp, specialization, room, price):
+        self.doctor_id = doctor_id
+        self.name = name
+        self.gender = gender
+        self.phone = phone
+        self.age = age
+        self.exp = exp
+        self.specialization = specialization
+        self.room = room
+        self.price = price
+        # جدول مواعيد افتراضي
+        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        hours = ["09", "10", "11", "12", "14", "15", "16", "17"]
+        self.schedule = {day: {hour: "available" for hour in hours} for day in days}
+
+# تهيئة البيانات
 if "doctors" not in st.session_state:
     st.session_state.doctors = []
 if "appointments" not in st.session_state:
@@ -41,10 +58,18 @@ if "patients" not in st.session_state:
 if "current_patient" not in st.session_state:
     st.session_state.current_patient = None
 
-# لو مفيش دكاترة (يعني المدير ما دخلش أو ما أضافش دكاترة)
+# إضافة الدكاترة الافتراضية لو القايمة فاضية (نفس البيانات اللي عندك)
 if not st.session_state.doctors:
-    st.error("No doctors available at the moment. Please contact the administration.")
-    st.stop()
+    st.session_state.doctors = [
+        Doctor("001", "Haneen El-Barbary", "Female", "01500111111", 27, 2, "Psychotherapy", 1, 250),
+        Doctor("002", "Haneen Ayman", "Female", "01000222222", 25, 1, "Pediatrics", 2, 200),
+        Doctor("003", "Menna Ayman", "Female", "01000333333", 25, 2, "Dermatology", 3, 300),
+        Doctor("004", "Sohaila Gomaa", "Female", "01000444444", 26, 3, "ENT", 4, 220),
+        Doctor("005", "Nour Omar", "Female", "01000555555", 27, 3, "Nutrition", 5, 180),
+        Doctor("006", "Haneen El Azab", "Female", "01000666666", 25, 1, "Cardiology", 6, 350),
+        Doctor("007", "Mostafa Hatem", "Male", "01000777777", 30, 4, "Orthopedics", 7, 300),
+        Doctor("008", "Mazen Tarek", "Male", "01000888888", 32, 5, "Neurology", 8, 350),
+    ]
 
 # ---------- Login or Create Account ----------
 st.markdown("<h2>🧑‍🦱 Patient Portal</h2>", unsafe_allow_html=True)
@@ -101,12 +126,6 @@ selected_specialization = st.selectbox("Choose a specialization", specialization
 
 available_doctors = [doc for doc in st.session_state.doctors if doc.specialization == selected_specialization]
 selected_doctor = st.selectbox("Choose a doctor", available_doctors, format_func=lambda d: f"Dr {d.name}")
-
-# جدول مواعيد (لو مش موجود نعمل واحد افتراضي)
-if not hasattr(selected_doctor, "schedule"):
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-    hours = ["09", "10", "11", "12", "14", "15", "16", "17"]
-    selected_doctor.schedule = {day: {hour: "available" for hour in hours} for day in days}
 
 available_days = list(selected_doctor.schedule.keys())
 selected_day = st.selectbox("Choose a day", available_days)
