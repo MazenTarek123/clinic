@@ -3,35 +3,93 @@ import streamlit as st
 # إخفاء header, footer, menu
 st.markdown("""
 <style>
-    header {visibility: hidden !important;}
-    #MainMenu {visibility: hidden !important;}
-    footer {visibility: hidden !important;}
-    .block-container {padding-top: 2rem;}
+    /* إخفاء عناصر Streamlit */
+    header, #MainMenu, footer {visibility: hidden !important;}
+    .block-container {padding-top: 2rem !important; padding-bottom: 2rem !important;}
+    
+    /* خلفية وخطوط عامة */
+    .stApp {
+        background: linear-gradient(to bottom, #f0f9ff, #ffffff);
+        font-family: 'Segoe UI', sans-serif;
+    }
+    
+    /* عنوان المرض */
+    .disease-tag {
+        text-align: center;
+        background: #2563eb;
+        color: white;
+        padding: 15px;
+        border-radius: 12px;
+        font-size: 24px;
+        font-weight: bold;
+        margin: 20px auto;
+        max-width: 600px;
+    }
+    
+    /* عناوين */
+    h1, h2, h3 {
+        color: #1e40af;
+        text-align: center;
+        font-weight: bold;
+    }
+    
+    /* Radio buttons في الوسط */
+    .stRadio > div {
+        justify-content: center;
+        gap: 2rem;
+    }
+    
+    /* Inputs */
+    .stTextInput > div > div > input, .stNumberInput > div > div > input {
+        border-radius: 10px;
+        border: 1px solid #2563eb;
+        padding: 12px;
+    }
+    
+    /* Labels */
+    .stTextInput > label, .stNumberInput > label, .stSelectbox > label {
+        font-weight: bold;
+        color: #1e40af;
+    }
+    
+    /* Buttons */
+    .stButton > button {
+        background: #2563eb;
+        color: white;
+        font-size: 18px;
+        height: 50px;
+        border-radius: 10px;
+        border: none;
+        width: 100%;
+        font-weight: bold;
+    }
+    .stButton > button:hover {
+        background: #1d4ed8;
+    }
+    
+    /* Success/Error/Warning */
+    .stSuccess, .stError, .stWarning {
+        text-align: center;
+        font-size: 18px;
+        border-radius: 10px;
+    }
+    
+    /* Table */
+    .stTable {
+        margin: 0 auto;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 st.set_page_config(page_title="Cure & Go | Patient Portal", page_icon="🧑‍🦱", layout="centered")
 
-# ستايل احترافي
-st.markdown("""
-<style>
-    .stApp {background: linear-gradient(to bottom, #f0f9ff, #ffffff);}
-    h1, h2, h3 {color: #1e40af; text-align: center;}
-    .disease-tag {text-align: center; background: #2563eb; color: white; padding: 15px; border-radius: 12px; font-size: 24px; margin: 20px 0; font-weight: bold;}
-    .stRadio > div {justify-content: center;}
-    .stButton > button {background: #2563eb; color: white; font-size: 18px; height: 50px; border-radius: 10px; width: 100%;}
-    .stButton > button:hover {background: #1d4ed8;}
-    .stSuccess, .stError, .stWarning {text-align: center; font-size: 18px;}
-</style>
-""", unsafe_allow_html=True)
-
-# جلب اسم المرض من URL
+# جلب اسم المرض
 query_params = st.query_params
 selected_disease = query_params.get("disease", ["General Consultation"])[0]
 
 st.markdown(f"<div class='disease-tag'>Patient Portal - {selected_disease}</div>", unsafe_allow_html=True)
 
-# تعريف كلاس Doctor لو مش موجود
+# تعريف Doctor
 class Doctor:
     def __init__(self, doctor_id, name, gender, phone, age, exp, specialization, room, price):
         self.doctor_id = doctor_id
@@ -43,7 +101,6 @@ class Doctor:
         self.specialization = specialization
         self.room = room
         self.price = price
-        # جدول مواعيد افتراضي
         days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
         hours = ["09", "10", "11", "12", "14", "15", "16", "17"]
         self.schedule = {day: {hour: "available" for hour in hours} for day in days}
@@ -58,7 +115,7 @@ if "patients" not in st.session_state:
 if "current_patient" not in st.session_state:
     st.session_state.current_patient = None
 
-# إضافة الدكاترة الافتراضية لو القايمة فاضية (نفس البيانات اللي عندك)
+# دكاترة افتراضية (نفس اللي عندك)
 if not st.session_state.doctors:
     st.session_state.doctors = [
         Doctor("001", "Haneen El-Barbary", "Female", "01500111111", 27, 2, "Psychotherapy", 1, 250),
