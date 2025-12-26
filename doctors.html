@@ -1,99 +1,102 @@
 import streamlit as st
 
-# 1. يجب أن يكون هذا الأمر هو أول سطر برمجي تماماً
+# 1. إعدادات الصفحة (يجب أن يكون أول سطر)
 st.set_page_config(page_title="Cure & Go | Doctor Portal", page_icon="👨‍⚕️", layout="wide")
 
-# --- تعريف الكلاس لضمان عمل الصفحة بشكل مستقل ---
+# --- تعريف الكلاس لضمان توافق البيانات ---
 class Doctor:
     def __init__(self, doctor_id, name, specialization):
         self.doctor_id = doctor_id
         self.name = name
         self.specialization = specialization
-        # إنشاء جدول مواعيد افتراضي
+        # جدول افتراضي: 7 أيام وكل يوم 24 ساعة
         self.schedule = {day: ["available"] * 24 for day in ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]}
 
-# --- تهيئة البيانات في الذاكرة (Session State) ---
-if "doctors" not in st.session_state:
-    st.session_state.doctors = [
+# --- تهيئة البيانات (Session State) ---
+# ملاحظة: في المشروع الكامل، هذه البيانات تأتي من ملفك الرئيسي
+if 'all_doctors' not in st.session_state:
+    st.session_state['all_doctors'] = [
         Doctor("001", "Haneen El-Barbary", "Psychotherapy"),
-        Doctor("006", "Haneen El Azab", "Cardiology"),
-        Doctor("007", "Mostafa Hatem", "Orthopedics")
+        Doctor("006", "Haneen El Azab", "Cardiology")
     ]
 
-if "appointments" not in st.session_state:
-    # إضافة مواعيد تجريبية لرؤية النتيجة
-    st.session_state.appointments = [
-        {"doctor_id": "001", "patient_name": "Ahmed Aly", "patient_phone": "0123456789", "day": "Monday", "hour": 10},
-        {"doctor_id": "001", "patient_name": "Sara Kamel", "patient_phone": "0111222333", "day": "Monday", "hour": 14}
-    ]
+if 'appointments' not in st.session_state:
+    st.session_state['appointments'] = []
 
-# --- تصميم الصفحة CSS ---
-st.markdown("""
-<style>
-    .stApp { background: linear-gradient(135deg, #f5f7fa, #c3cfe2); }
-    .login-box { background-color: white; padding: 30px; border-radius: 15px; box-shadow: 0px 4px 15px rgba(0,0,0,0.1); }
-    h1 { color: #1f2937; text-align: center; }
-</style>
-""", unsafe_allow_html=True)
-
-# ---------------------------------------------------------
-# الجزء الخاص بتسجيل الدخول
-# ---------------------------------------------------------
-if 'logged_in_doctor_id' not in st.session_state or st.session_state['logged_in_doctor_id'] is None:
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 1.5, 1])
+# --- دالة بوابة الدكتور ---
+def doctor_function():
+    st.header("👨‍⚕️ Doctor Portal")
     
-    with col2:
-        st.markdown("<h1>👨‍⚕️ Doctor Login</h1>", unsafe_allow_html=True)
-        with st.container():
-            doc_id_input = st.text_input("Enter your 3-digit ID", placeholder="e.g. 001")
-            if st.button("Login to Dashboard", use_container_width=True):
-                found_doc = next((d for d in st.session_state.doctors if d.doctor_id == doc_id_input), None)
-                if found_doc:
-                    st.session_state['logged_in_doctor_id'] = found_doc.doctor_id
-                    st.success(f"Welcome Dr. {found_doc.name}")
-                    st.rerun()
+    # --- 1. Login Logic ---
+    if st.session_state.get('logged_in_doctor') is None:
+        st.subheader("Login")
+        with st.form("doctor_login_form"):
+            doc_id_input = st.text_input("Enter Doctor ID (3 digits)", max_chars=3)
+            submitted = st.form_submit_button("Login")
+
+            if submitted:
+                if len(doc_id_input) == 3 and doc_id_input.isdigit():
+                    found_doc = next((doc for doc in st.session_state['all_doctors'] if doc.doctor_id == doc_id_input), None)
+                    
+                    if found_doc:
+                        st.session_state['logged_in_doctor'] = found_doc
+                        st.success(f"Welcome, Dr. {found_doc.name}!")
+                        st.rerun() 
+                    else:
+                        st.error("Access Denied: Doctor ID not found.")
                 else:
-                    st.error("ID not found. Try 001")
-    st.stop() # توقف هنا حتى يتم تسجيل الدخول
+                    st.error("Invalid ID format. Must be exactly 3 digits.")
+        return 
 
-# ---------------------------------------------------------
-# الجزء الخاص بلوحة تحكم الطبيب (يظهر بعد تسجيل الدخول)
-# ---------------------------------------------------------
-current_doc = next(d for d in st.session_state.doctors if d.doctor_id == st.session_state['logged_in_doctor_id'])
-
-# القائمة الجانبية
-with st.sidebar:
-    st.title(f"Dr. {current_doc.name}")
-    st.write(f"**Specialty:** {current_doc.specialization}")
-    st.write("---")
-    menu = st.radio("Navigation", ["📅 My Appointments", "⚙️ Manage Schedule", "🚪 Logout"])
-
-# 1. عرض المواعيد
-if menu == "📅 My Appointments":
-    st.header("My Appointments")
-    my_appts = [a for a in st.session_state.appointments if a['doctor_id'] == current_doc.doctor_id]
+    # --- 2. Dashboard Logic ---
+    current_doc = st.session_state['logged_in_doctor']
     
-    if my_appts:
-        st.table(my_appts)
-    else:
-        st.info("No appointments scheduled.")
+    with st.sidebar:
+        st.title(f"Dr. {current_doc.name}")
+        st.write(f"**Specialization:** {current_doc.specialization}")
+        st.write("---")
+        menu = st.radio("Navigation", ["📅 My Appointments", "⚙️ Manage Availability", "🚪 Logout"])
 
-# 2. إدارة الجدول
-elif menu == "⚙️ Manage Schedule":
-    st.header("Work Schedule")
-    day = st.selectbox("Select Day", list(current_doc.schedule.keys()))
-    
-    cols = st.columns(4)
-    for i in range(24):
-        status = current_doc.schedule[day][i]
-        btn_label = f"{i:02d}:00 - {status}"
-        with cols[i % 4]:
-            if st.button(btn_label, key=f"btn_{i}"):
-                current_doc.schedule[day][i] = "not available" if status == "available" else "available"
-                st.rerun()
+    if menu == "📅 My Appointments":
+        st.subheader("My Scheduled Appointments")
+        all_appointments = st.session_state.get('appointments', [])
+        my_appointments = [appt for appt in all_appointments if appt['doctor_id'] == current_doc.doctor_id]
 
-# 3. تسجيل الخروج
-elif menu == "🚪 Logout":
-    st.session_state['logged_in_doctor_id'] = None
-    st.rerun()
+        if my_appointments:
+            st.table(my_appointments)
+        else:
+            st.info("You have no upcoming appointments.")
+
+    elif menu == "⚙️ Manage Availability":
+        st.subheader("Edit Work Schedule")
+        selected_day = st.selectbox("Select Day to Edit", list(current_doc.schedule.keys()))
+        
+        st.info("Note: You cannot close hours that are already 'Booked'.")
+        
+        col1, col2, col3 = st.columns(3)
+        current_schedule = current_doc.schedule[selected_day]
+        
+        for i in range(24):
+            status = current_schedule[i]
+            hour_label = f"{i:02d}:00"
+            if i < 8: col = col1
+            elif i < 16: col = col2
+            else: col = col3
+            
+            with col:
+                if status == "booked":
+                    st.warning(f"🕒 {hour_label}: 🔒 BOOKED")
+                else:
+                    is_available = (status == "available")
+                    btn_label = f"🕒 {hour_label}: {'✅ Open' if is_available else '⛔ Closed'}"
+                    if st.button(btn_label, key=f"btn_{selected_day}_{i}"):
+                        current_doc.schedule[selected_day][i] = "not available" if is_available else "available"
+                        st.rerun()
+
+    elif menu == "🚪 Logout":
+        st.session_state['logged_in_doctor'] = None
+        st.rerun()
+
+# تشغيل الدالة
+if __name__ == "__main__":
+    doctor_function()
