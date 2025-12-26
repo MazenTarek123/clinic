@@ -182,8 +182,7 @@ a {
     border: 5px solid var(--main-coloe-alt);
 }
 .landing .container .links {
-    text-align: left;
-    margin-top: 50px;
+    margin: 50px 0;
     display: flex;
     align-items: center;
     justify-content: center;
