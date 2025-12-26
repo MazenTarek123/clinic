@@ -1,5 +1,45 @@
 import streamlit as st
 
+# -------------------- Custom CSS (مثل صفحة المدير) --------------------
+st.set_page_config(page_title="Cure & Go | Doctor", page_icon="🩺", layout="wide")
+
+st.markdown("""
+<style>
+.stApp {
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    font-family: 'Segoe UI', sans-serif;
+}
+.main-title {
+    font-size: 42px;
+    font-weight: 800;
+    text-align: center;
+    color: #1f2937;
+    animation: fadeDown 1s ease;
+}
+.sub-title {
+    text-align: center;
+    color: #374151;
+    margin-bottom: 35px;
+}
+.stButton>button {
+    border-radius: 14px;
+    padding: 12px;
+    background: linear-gradient(90deg, #2563eb, #1d4ed8);
+    color: white;
+    font-weight: bold;
+    border: none;
+    transition: 0.3s;
+}
+.stButton>button:hover {
+    transform: scale(1.06);
+}
+@keyframes fadeDown {
+    from {opacity:0; transform:translateY(-30px);}
+    to {opacity:1; transform:translateY(0);}
+}
+</style>
+""", unsafe_allow_html=True)
+
 # -------------------- Data Class --------------------
 class Doctor:
     def __init__(self, doctor_id, name, gender, phone, age, experience, specialization, room, price):
@@ -39,7 +79,8 @@ if 'logged_in_doctor' not in st.session_state:
 
 # -------------------- Doctor Portal --------------------
 def doctor_portal():
-    st.header("👨‍⚕️ Doctor Portal")
+    st.markdown("<div class='main-title'>👨‍⚕️ Doctor Portal</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sub-title'>Cure & Go Medical Center</div>", unsafe_allow_html=True)
 
     # ---------- Login ----------
     if st.session_state['logged_in_doctor'] is None:
