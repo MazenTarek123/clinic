@@ -15,45 +15,13 @@ st.set_page_config(page_title="Cure & Go | Patient Portal", page_icon="🧑‍�
 # ستايل احترافي يشبه موقعك
 st.markdown("""
 <style>
-    .stApp {
-        background: linear-gradient(to bottom, #f0f9ff, #ffffff);
-        font-family: 'Segoe UI', sans-serif;
-    }
-    h1, h2, h3 {
-        color: #1e40af;
-        text-align: center;
-    }
-    .disease-tag {
-        text-align: center;
-        background: #2563eb;
-        color: white;
-        padding: 15px;
-        border-radius: 12px;
-        font-size: 24px;
-        margin: 20px 0;
-        font-weight: bold;
-    }
-    .stRadio > div {
-        justify-content: center;
-    }
-    .stButton > button {
-        background: #2563eb;
-        color: white;
-        font-size: 18px;
-        height: 50px;
-        border-radius: 10px;
-        width: 100%;
-    }
-    .stButton > button:hover {
-        background: #1d4ed8;
-    }
-    .stSuccess, .stError, .stWarning {
-        text-align: center;
-        font-size: 18px;
-    }
-    .stTable {
-        margin: auto;
-    }
+    .stApp {background: linear-gradient(to bottom, #f0f9ff, #ffffff);}
+    h1, h2, h3 {color: #1e40af; text-align: center;}
+    .disease-tag {text-align: center; background: #2563eb; color: white; padding: 15px; border-radius: 12px; font-size: 24px; margin: 20px 0; font-weight: bold;}
+    .stRadio > div {justify-content: center;}
+    .stButton > button {background: #2563eb; color: white; font-size: 18px; height: 50px; border-radius: 10px; width: 100%;}
+    .stButton > button:hover {background: #1d4ed8;}
+    .stSuccess, .stError, .stWarning {text-align: center; font-size: 18px;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -63,7 +31,7 @@ selected_disease = query_params.get("disease", ["General Consultation"])[0]
 
 st.markdown(f"<div class='disease-tag'>Patient Portal - {selected_disease}</div>", unsafe_allow_html=True)
 
-# تهيئة البيانات
+# تهيئة البيانات (نفس اللي في الـ Admin)
 if "doctors" not in st.session_state:
     st.session_state.doctors = []
 if "appointments" not in st.session_state:
@@ -73,7 +41,7 @@ if "patients" not in st.session_state:
 if "current_patient" not in st.session_state:
     st.session_state.current_patient = None
 
-# لو مفيش دكاترة
+# لو مفيش دكاترة (يعني المدير ما دخلش أو ما أضافش دكاترة)
 if not st.session_state.doctors:
     st.error("No doctors available at the moment. Please contact the administration.")
     st.stop()
@@ -134,7 +102,7 @@ selected_specialization = st.selectbox("Choose a specialization", specialization
 available_doctors = [doc for doc in st.session_state.doctors if doc.specialization == selected_specialization]
 selected_doctor = st.selectbox("Choose a doctor", available_doctors, format_func=lambda d: f"Dr {d.name}")
 
-# جدول مواعيد افتراضي لو مش موجود
+# جدول مواعيد (لو مش موجود نعمل واحد افتراضي)
 if not hasattr(selected_doctor, "schedule"):
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
     hours = ["09", "10", "11", "12", "14", "15", "16", "17"]
@@ -150,10 +118,9 @@ if available_hours:
     if st.button("Book Appointment"):
         selected_doctor.schedule[selected_day][selected_hour] = "booked"
         appointment = {
-            "disease": selected_disease,  # اسم المرض اللي جاء من patient.html
+            "disease": selected_disease,
             "doctor_id": selected_doctor.doctor_id,
             "doctor": selected_doctor.name,
-            "specialization": selected_doctor.specialization,
             "patient_name": st.session_state.current_patient["name"],
             "patient_phone": st.session_state.current_patient["phone"],
             "day": selected_day,
@@ -176,7 +143,6 @@ if appointments:
             "No.": i,
             "Disease": app.get("disease", "N/A"),
             "Doctor": f"Dr {app['doctor']}",
-            "Specialization": app.get("specialization", "N/A"),
             "Day": app["day"],
             "Time": f"{app['hour']}:00"
         })
