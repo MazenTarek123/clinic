@@ -1,33 +1,27 @@
 import streamlit as st
 
-# ----------------- Page Config -----------------
+# ---------------- Page Config ----------------
 st.set_page_config(
     page_title="Cure & Go | Patient Portal",
     page_icon="🧑‍🦱",
     layout="wide"
 )
 
-# ----------------- Hide Streamlit UI -----------------
-hide_streamlit_elements = """
+# ---------------- Hide Streamlit UI ----------------
+st.markdown("""
 <style>
-header {visibility: hidden !important;}
-#MainMenu {visibility: hidden !important;}
-footer {visibility: hidden !important;}
+header {visibility: hidden;}
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
 
 .block-container {
     padding-top: 0rem !important;
     padding-bottom: 0rem !important;
 }
-
-.main > div {
-    padding-left: 1rem;
-    padding-right: 1rem;
-}
 </style>
-"""
-st.markdown(hide_streamlit_elements, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# ----------------- Custom Style -----------------
+# ---------------- Custom Style ----------------
 st.markdown("""
 <style>
 .stApp {
@@ -35,13 +29,12 @@ st.markdown("""
     font-family: 'Segoe UI', sans-serif;
 }
 
-/* TITLES */
+/* Titles */
 .main-title {
     font-size: 42px;
     font-weight: 800;
     text-align: center;
     color: #1f2937;
-    animation: fadeDown 1s ease;
 }
 
 .sub-title {
@@ -51,8 +44,8 @@ st.markdown("""
     font-size: 18px;
 }
 
-/* BUTTONS */
-.stButton>button {
+/* Buttons */
+.stButton > button {
     border-radius: 14px;
     padding: 12px;
     background: linear-gradient(90deg, #2563eb, #1d4ed8);
@@ -61,64 +54,70 @@ st.markdown("""
     border: none;
     transition: 0.3s;
 }
-.stButton>button:hover {
-    transform: scale(1.06);
+
+.stButton > button:hover {
+    transform: scale(1.05);
 }
 
-/* TEXT FIX (WHITE TEXT ISSUE) */
-body, label, span, p, div {
+/* Text colors (SMART FIX) */
+p, label, h1, h2, h3, h4 {
     color: #1f2937 !important;
 }
 
-.stRadio label, .stSelectbox label {
+/* Inputs text */
+input, textarea {
+    color: #111827 !important;
+}
+
+/* Selectbox text */
+div[data-baseweb="select"] span {
+    color: #111827 !important;
+}
+
+/* Selectbox shape */
+div[data-baseweb="select"] > div {
+    background-color: #ffffff !important;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+}
+
+/* Radio buttons */
+.stRadio label {
     color: #1f2937 !important;
     font-weight: 600;
 }
 
-div[data-baseweb="select"] span {
-    color: #1f2937 !important;
-}
-
+/* Tables */
 table, th, td {
     color: #111827 !important;
-}
-
-/* ANIMATION */
-@keyframes fadeDown {
-    from {opacity:0; transform:translateY(-30px);}
-    to {opacity:1; transform:translateY(0);}
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ----------------- Get Disease From URL (FIXED) -----------------
+# ---------------- Get Disease From URL (FIXED) ----------------
 query_params = st.query_params
 selected_disease = query_params.get("disease", "General Consultation")
-
 if isinstance(selected_disease, list):
     selected_disease = selected_disease[0]
 
-# ----------------- Header -----------------
+# ---------------- Header ----------------
 st.markdown("<div class='main-title'>🧑‍🦱 Patient Portal</div>", unsafe_allow_html=True)
 st.markdown(
     f"<div class='sub-title'>📌 Booking for <b>{selected_disease}</b></div>",
     unsafe_allow_html=True
 )
 
-# ----------------- Session State -----------------
+# ---------------- Session State ----------------
 if "doctors" not in st.session_state:
     st.session_state.doctors = []
-
-if "appointments" not in st.session_state:
-    st.session_state.appointments = []
-
 if "patients" not in st.session_state:
     st.session_state.patients = []
-
+if "appointments" not in st.session_state:
+    st.session_state.appointments = []
 if "current_patient" not in st.session_state:
     st.session_state.current_patient = None
 
-# ----------------- Doctor Class -----------------
+# ---------------- Doctor Class ----------------
 class Doctor:
     def __init__(self, doctor_id, name, gender, phone, age, exp, specialization, room, price):
         self.doctor_id = doctor_id
@@ -135,7 +134,7 @@ class Doctor:
         hours = ["09", "10", "11", "12", "14", "15", "16", "17"]
         self.schedule = {day: {hour: "available" for hour in hours} for day in days}
 
-# ----------------- Dummy Doctors -----------------
+# ---------------- Dummy Doctors ----------------
 if not st.session_state.doctors:
     st.session_state.doctors = [
         Doctor("001", "Haneen El-Barbary", "Female", "01500111111", 27, 2, "Psychotherapy", 1, 250),
@@ -148,7 +147,7 @@ if not st.session_state.doctors:
         Doctor("008", "Mazen Tarek", "Male", "01000888888", 32, 5, "Neurology", 8, 350),
     ]
 
-# ----------------- Login / Register -----------------
+# ---------------- Login / Register ----------------
 option = st.radio("Do you want to Login or Create a New Account?", ["Login", "Create Account"])
 
 if option == "Create Account":
@@ -180,27 +179,19 @@ if option == "Login":
         else:
             st.error("Phone number not found. Please create an account.")
 
-# ----------------- Auth Check -----------------
+# ---------------- Auth Check ----------------
 if st.session_state.current_patient is None:
     st.warning("Please login or create an account first.")
     st.stop()
 
 st.success(f"Welcome {st.session_state.current_patient['name']}")
 
-# ----------------- Booking -----------------
+# ---------------- Booking ----------------
 specializations = list(set(doc.specialization for doc in st.session_state.doctors))
 selected_specialization = st.selectbox("Choose a specialization", specializations)
 
-available_doctors = [
-    doc for doc in st.session_state.doctors
-    if doc.specialization == selected_specialization
-]
-
-selected_doctor = st.selectbox(
-    "Choose a doctor",
-    available_doctors,
-    format_func=lambda d: f"Dr {d.name}"
-)
+available_doctors = [doc for doc in st.session_state.doctors if doc.specialization == selected_specialization]
+selected_doctor = st.selectbox("Choose a doctor", available_doctors, format_func=lambda d: f"Dr {d.name}")
 
 selected_day = st.selectbox("Choose a day", list(selected_doctor.schedule.keys()))
 
@@ -232,12 +223,11 @@ if available_hours:
 else:
     st.warning("No available hours for this doctor on this day.")
 
-# ----------------- View & Cancel -----------------
+# ---------------- View Appointments ----------------
 appointments = st.session_state.current_patient["appointments"]
 
 if appointments:
     st.subheader("📋 Your Appointments")
-
     st.table([
         {
             "Disease": app["disease"],
