@@ -59,7 +59,7 @@ st.markdown("""
     transform: scale(1.05);
 }
 
-/* Text colors (SMART FIX) */
+/* Normal text */
 p, label, h1, h2, h3, h4 {
     color: #1f2937 !important;
 }
@@ -69,16 +69,48 @@ input, textarea {
     color: #111827 !important;
 }
 
-/* Selectbox text */
+/* ===== SELECTBOX LIGHT FIX ===== */
+
+/* الصندوق نفسه */
+div[data-baseweb="select"] > div {
+    background-color: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    min-height: 48px;
+}
+
+/* النص المختار */
 div[data-baseweb="select"] span {
+    color: #111827 !important;
+    font-weight: 500;
+}
+
+/* السهم */
+div[data-baseweb="select"] svg {
+    fill: #374151 !important;
+}
+
+/* عند التركيز */
+div[data-baseweb="select"]:focus-within > div {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+/* القائمة المنسدلة */
+ul[role="listbox"] {
+    background-color: #ffffff !important;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+/* عناصر القائمة */
+ul[role="listbox"] li {
     color: #111827 !important;
 }
 
-/* Selectbox shape */
-div[data-baseweb="select"] > div {
-    background-color: #ffffff !important;
-    border-radius: 10px;
-    border: 1px solid #d1d5db;
+/* hover */
+ul[role="listbox"] li:hover {
+    background-color: #eff6ff !important;
 }
 
 /* Radio buttons */
@@ -94,7 +126,7 @@ table, th, td {
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- Get Disease From URL (FIXED) ----------------
+# ---------------- Get Disease From URL ----------------
 query_params = st.query_params
 selected_disease = query_params.get("disease", "General Consultation")
 if isinstance(selected_disease, list):
