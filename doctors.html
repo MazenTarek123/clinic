@@ -1,102 +1,119 @@
-import streamlit as st
-
-# 1. إعدادات الصفحة (يجب أن يكون أول سطر)
-st.set_page_config(page_title="Cure & Go | Doctor Portal", page_icon="👨‍⚕️", layout="wide")
-
-# --- تعريف الكلاس لضمان توافق البيانات ---
-class Doctor:
-    def __init__(self, doctor_id, name, specialization):
-        self.doctor_id = doctor_id
-        self.name = name
-        self.specialization = specialization
-        # جدول افتراضي: 7 أيام وكل يوم 24 ساعة
-        self.schedule = {day: ["available"] * 24 for day in ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]}
-
-# --- تهيئة البيانات (Session State) ---
-# ملاحظة: في المشروع الكامل، هذه البيانات تأتي من ملفك الرئيسي
-if 'all_doctors' not in st.session_state:
-    st.session_state['all_doctors'] = [
-        Doctor("001", "Haneen El-Barbary", "Psychotherapy"),
-        Doctor("006", "Haneen El Azab", "Cardiology")
-    ]
-
-if 'appointments' not in st.session_state:
-    st.session_state['appointments'] = []
-
-# --- دالة بوابة الدكتور ---
-def doctor_function():
-    st.header("👨‍⚕️ Doctor Portal")
-    
-    # --- 1. Login Logic ---
-    if st.session_state.get('logged_in_doctor') is None:
-        st.subheader("Login")
-        with st.form("doctor_login_form"):
-            doc_id_input = st.text_input("Enter Doctor ID (3 digits)", max_chars=3)
-            submitted = st.form_submit_button("Login")
-
-            if submitted:
-                if len(doc_id_input) == 3 and doc_id_input.isdigit():
-                    found_doc = next((doc for doc in st.session_state['all_doctors'] if doc.doctor_id == doc_id_input), None)
-                    
-                    if found_doc:
-                        st.session_state['logged_in_doctor'] = found_doc
-                        st.success(f"Welcome, Dr. {found_doc.name}!")
-                        st.rerun() 
-                    else:
-                        st.error("Access Denied: Doctor ID not found.")
-                else:
-                    st.error("Invalid ID format. Must be exactly 3 digits.")
-        return 
-
-    # --- 2. Dashboard Logic ---
-    current_doc = st.session_state['logged_in_doctor']
-    
-    with st.sidebar:
-        st.title(f"Dr. {current_doc.name}")
-        st.write(f"**Specialization:** {current_doc.specialization}")
-        st.write("---")
-        menu = st.radio("Navigation", ["📅 My Appointments", "⚙️ Manage Availability", "🚪 Logout"])
-
-    if menu == "📅 My Appointments":
-        st.subheader("My Scheduled Appointments")
-        all_appointments = st.session_state.get('appointments', [])
-        my_appointments = [appt for appt in all_appointments if appt['doctor_id'] == current_doc.doctor_id]
-
-        if my_appointments:
-            st.table(my_appointments)
-        else:
-            st.info("You have no upcoming appointments.")
-
-    elif menu == "⚙️ Manage Availability":
-        st.subheader("Edit Work Schedule")
-        selected_day = st.selectbox("Select Day to Edit", list(current_doc.schedule.keys()))
-        
-        st.info("Note: You cannot close hours that are already 'Booked'.")
-        
-        col1, col2, col3 = st.columns(3)
-        current_schedule = current_doc.schedule[selected_day]
-        
-        for i in range(24):
-            status = current_schedule[i]
-            hour_label = f"{i:02d}:00"
-            if i < 8: col = col1
-            elif i < 16: col = col2
-            else: col = col3
-            
-            with col:
-                if status == "booked":
-                    st.warning(f"🕒 {hour_label}: 🔒 BOOKED")
-                else:
-                    is_available = (status == "available")
-                    btn_label = f"🕒 {hour_label}: {'✅ Open' if is_available else '⛔ Closed'}"
-                    if st.button(btn_label, key=f"btn_{selected_day}_{i}"):
-                        current_doc.schedule[selected_day][i] = "not available" if is_available else "available"
-                        st.rerun()
-
-    elif menu == "🚪 Logout":
-        st.session_state['logged_in_doctor'] = None
-        st.rerun()
-
-# تشغيل الدالة
-if __name__ == "__main__":
-    doctor_function()
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="style.css">
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <title>Document</title>
+    </head>
+    <body>
+        <!-- start testimonials -->
+        <div class="Doctors">
+            <h2 class="main-title">doctors</h2>
+            <a href="patient.html" class="back"><i class="fa-solid fa-arrow-left-long"></i>back</a>
+            <div class="container">
+                <div class="box">
+                    <img src="images/me.png" alt="">
+                    <h3>Dr. Mazen Tarek <br>(Neurology)</h3>
+                    <p>Male<br>32 years old<br>5 years experience<br>Room 8.<br>Consultation fee: 350 EGP.<br>Phone: 01000888888.</p>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                </div>
+                <div class="box">
+                    <img src="images/hanen.png" alt="">
+                    <h3>Dr. Haneen El-Barbary (Psychotherapy)</h3>
+                    <p>
+                    Female<br>
+                    27 years old<br>
+                    2 years experience<br>
+                    Room 1.<br>
+                    Consultation fee: 250 EGP.<br>
+                    Phone: 01500111111.
+                    </p>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-regular fa-star"></i>
+                </div>
+                <div class="box">
+                    <img src="images/haneen-2.png" alt="">
+                    <h3>Dr. Haneen Ayman <br>(Pediatrics)</h3>
+                    <p>
+                    Female<br>
+                    25 years old<br>
+                    1 year experience<br>
+                    Room 2.<br>
+                    Consultation fee: 200 EGP.<br>
+                    Phone: 01000222222.
+                    </p>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-regular fa-star"></i>
+                    <i class="fa-regular fa-star"></i>
+                </div>
+                <div class="box">
+                    <img src="images/mostafa.png" alt="">
+                    <h3>Dr. Mostafa Hatem <br>(Orthopedics)</h3>
+                    <p>Male<br>30 years old<br>4 years experience<br>Room 7.<br>Consultation fee: 300 EGP.<br>Phone: 01000777777.</p>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-regular fa-star"></i>
+                    <i class="fa-regular fa-star"></i>
+                </div>َ
+                <div class="box">
+                    <img src="images/char_4.avif" alt="">
+                    <h3>Dr. Haneen El Aazab <br>(Cardiology)</h3>
+                    <p>Female<br>25 years old<br>1 year experience<br>Room 6.<br>Consultation fee: 350 EGP.<br>Phone: 01000666666.</p>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-regular fa-star"></i>
+                    <i class="fa-regular fa-star"></i>
+                    <i class="fa-regular fa-star"></i>
+                </div>
+                <div class="box">
+                    <img src="images/nour.jpeg" alt="">
+                    <h3>Dr. Nour Omar <br>(Nutrition)</h3>
+                    <p>Female<br>27 years old<br>3 years experience<br>Room 5.<br>Consultation fee: 180 EGP.<br>Phone: 01000555555.</p>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-regular fa-star"></i>
+                </div>
+                <div class="box">
+                    <img src="images/char_5.avif" alt="">
+                    <h3>Dr. Soheila Friday <br>(ENT)</h3>
+                    <p>Female<br>26 years old<br>3 years experience<br>Room 4.<br>Consultation fee: 220 EGP.<br>Phone: 01000444444.</p>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-regular fa-star"></i>
+                </div>
+                <div class="box">
+                    <img src="images/char_6.avif" alt="">
+                    <h3>Dr. Menna Ayman <br>(Dermatology)</h3>
+                    <p>Female<br>25 years old<br>2 years experience<br>Room 3.<br>Consultation fee: 300 EGP.<br>Phone: 01000333333.</p>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-solid fa-star filled"></i>
+                    <i class="fa-regular fa-star"></i>
+                </div>
+            </div>
+            <ul class="bullets">
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
+        </div>
+        <!-- end testimonials -->
+    </body>
+</html>
