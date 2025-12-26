@@ -1,12 +1,16 @@
 import streamlit as st
 
-# إخفاء header, footer, menu فقط
+# إخفاء header, footer, menu
 st.markdown("""
 <style>
     header {visibility: hidden !important;}
     #MainMenu {visibility: hidden !important;}
     footer {visibility: hidden !important;}
     .block-container {padding-top: 2rem;}
+    /* خلفية فاتحة زي موقعك */
+    .stApp {
+        background-color: #f0f9ff;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -44,7 +48,7 @@ class Doctor:
         hours = ["09", "10", "11", "12", "14", "15", "16", "17"]
         self.schedule = {day: {hour: "available" for hour in hours} for day in days}
 
-# دكاترة افتراضية لو القايمة فاضية
+# دكاترة افتراضية (نفس البيانات بتاعتك)
 if not st.session_state.doctors:
     st.session_state.doctors = [
         Doctor("001", "Haneen El-Barbary", "Female", "01500111111", 27, 2, "Psychotherapy", 1, 250),
@@ -67,23 +71,24 @@ if option == "Create Account":
     age = st.number_input("Enter your age", min_value=1, step=1)
     phone_number = st.text_input("Enter your phone number")
     if st.button("Create Account"):
-        patient = {
-            "name": name,
-            "age": age,
-            "phone": phone_number,
-            "appointments": []
-        }
-        st.session_state["patients"].append(patient)
-        st.session_state["current_patient"] = patient
-        st.success(f"Account created successfully! Welcome {name}")
+        if name and phone_number:
+            patient = {
+                "name": name,
+                "age": age,
+                "phone": phone_number,
+                "appointments": []
+            }
+            st.session_state.patients.append(patient)
+            st.session_state.current_patient = patient
+            st.success(f"Account created successfully! Welcome {name}")
 
 if option == "Login":
     phone = st.text_input("Enter your phone number to login")
     if st.button("Login"):
         found = False
-        for patient in st.session_state["patients"]:
+        for patient in st.session_state.patients:
             if patient["phone"] == phone:
-                st.session_state["current_patient"] = patient
+                st.session_state.current_patient = patient
                 st.success(f"Welcome back, {patient['name']}!")
                 found = True
                 break
@@ -91,11 +96,11 @@ if option == "Login":
             st.error("Phone number not found. Please create an account.")
 
 # ------------- check if logged in -------------
-if st.session_state["current_patient"] is None:
+if st.session_state.current_patient is None:
     st.warning("Please login or create an account first.")
     st.stop()
 else:
-    st.success(f"Welcome {st.session_state['current_patient']['name']}")
+    st.success(f"Welcome {st.session_state.current_patient['name']}")
 
 #----------------- booking --------------------
 specializations = list(set(doc.specialization for doc in st.session_state.doctors))
@@ -117,19 +122,19 @@ if available_hours:
             "disease": selected_disease,
             "doctor_id": selected_doctor.doctor_id,
             "doctor": selected_doctor.name,
-            "patient_name": st.session_state["current_patient"]["name"],
-            "patient_phone": st.session_state["current_patient"]["phone"],
+            "patient_name": st.session_state.current_patient["name"],
+            "patient_phone": st.session_state.current_patient["phone"],
             "day": selected_day,
             "hour": selected_hour
         }
-        st.session_state["current_patient"]["appointments"].append(appointment)
-        st.session_state["appointments"].append(appointment)
+        st.session_state.current_patient["appointments"].append(appointment)
+        st.session_state.appointments.append(appointment)  # ده اللي بيخلي الحجز يظهر عند المدير
         st.success(f"Appointment booked successfully with Dr {selected_doctor.name} on {selected_day} at {selected_hour}:00")
 else:
     st.warning("No available hours for this doctor on this day. Please choose another day or doctor.")
 
 #------------- view & cancel appointments -------------
-appointments = st.session_state["current_patient"]["appointments"]
+appointments = st.session_state.current_patient["appointments"]
 if appointments:
     st.subheader("📋 Your Appointments")
     display_apps = []
@@ -138,7 +143,7 @@ if appointments:
             "No.": i,
             "Disease": app.get("disease", "N/A"),
             "Doctor": f"Dr {app['doctor']}",
-            "Day": app['day'],
+            "Day": app["day"],
             "Time": f"{app['hour']}:00"
         })
     st.table(display_apps)
@@ -149,16 +154,11 @@ if appointments:
     if st.button("Cancel Appointment"):
         index_to_cancel = cancel_options.index(appointment_to_cancel)
         canceled_app = appointments.pop(index_to_cancel)
-        st.session_state['appointments'] = [
-            a for a in st.session_state['appointments']
-            if not (
-                a['doctor'] == canceled_app['doctor'] and
-                a['day'] == canceled_app['day'] and
-                a['hour'] == canceled_app['hour'] and
-                a['patient_phone'] == st.session_state['current_patient']['phone']
-            )
+        st.session_state.appointments = [
+            a for a in st.session_state.appointments
+            if not (a['doctor'] == canceled_app['doctor'] and a['day'] == canceled_app['day'] and a['hour'] == canceled_app['hour'])
         ]
-        for doc in st.session_state['doctors']:
+        for doc in st.session_state.doctors:
             if doc.name == canceled_app["doctor"]:
                 doc.schedule[canceled_app["day"]][canceled_app["hour"]] = "available"
                 break
