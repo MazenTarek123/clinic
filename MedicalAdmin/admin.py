@@ -1,5 +1,30 @@
 import streamlit as st
 
+
+# ======================================================
+# Streamlit (Header + Menu + Footer + Hamburger)
+# ======================================================
+hide_streamlit_elements = """
+<style>
+    
+    header {visibility: hidden !important;}
+    #MainMenu {visibility: hidden !important;}
+    section[data-testid="stSidebar"] > div:first-child {visibility: hidden !important;}
+    footer {visibility: hidden !important;}
+    .block-container {
+        padding-top: 0rem !important;
+        padding-bottom: 0rem !important;
+    }
+    
+   
+    .main > div {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+</style>
+"""
+st.markdown(hide_streamlit_elements, unsafe_allow_html=True)
+
 # ======================================================
 # Page Config
 # ======================================================
