@@ -186,7 +186,7 @@ def manager_dashboard():
         else:
             st.info("No doctors available.")
 
-    # ----------------- Appointments Tab (معدل عشان يظهر الحجوزات مع المرض والتفاصيل) -----------------
+    # ----------------- Appointments Tab  -----------------
     with tab5:
         st.subheader("📆 All Appointments")
         if st.session_state.appointments:
