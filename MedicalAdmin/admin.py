@@ -29,7 +29,6 @@ st.markdown("""
     background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
     font-family: 'Segoe UI', sans-serif;
 }
-
 .main-title {
     font-size: 42px;
     font-weight: 800;
@@ -42,7 +41,6 @@ st.markdown("""
     color: #374151;
     margin-bottom: 35px;
 }
-
 .stButton>button {
     border-radius: 14px;
     padding: 12px;
@@ -55,7 +53,6 @@ st.markdown("""
 .stButton>button:hover {
     transform: scale(1.06);
 }
-
 @keyframes fadeDown {
     from {opacity:0; transform:translateY(-30px);}
     to {opacity:1; transform:translateY(0);}
@@ -91,19 +88,16 @@ if "appointments" not in st.session_state:
     st.session_state.appointments = []
 if "patients" not in st.session_state:
     st.session_state.patients = []
-
 if "manager_logged" not in st.session_state:
     st.session_state.manager_logged = False
 
 def manager_login():
     st.markdown("<div class='main-title'>Admin Login</div>", unsafe_allow_html=True)
     st.markdown("<div class='sub-title'>Cure & Go Medical Center</div>", unsafe_allow_html=True)
-
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
         username = st.text_input("👤 Username")
         password = st.text_input("🔑 Password", type="password")
-
         if st.button("Login", use_container_width=True):
             if username == "admin" and password == "12345":
                 st.session_state.manager_logged = True
@@ -115,9 +109,8 @@ def manager_login():
 def manager_dashboard():
     st.markdown("<div class='main-title'>🛠 Admin Dashboard</div>", unsafe_allow_html=True)
     st.markdown("<div class='sub-title'>Manage Doctors & Clinic System</div>", unsafe_allow_html=True)
-
     st.sidebar.title("🏥 Cure & Go Clinic")
-    
+   
     if st.sidebar.button("🚪 Logout"):
         st.session_state.manager_logged = False
         st.rerun()
@@ -134,21 +127,18 @@ def manager_dashboard():
             "Room": d.room, "Price": d.price
         } for d in st.session_state.doctors]
         st.table(doctors_data)
-
         st.markdown("---")
         st.subheader("Edit Doctor Information")
         options = [f"{d.doctor_id} - {d.name}" for d in st.session_state.doctors]
         selected = st.selectbox("Select Doctor to Edit", options)
         selected_id = selected.split(" - ")[0]
         selected_doc = next(d for d in st.session_state.doctors if d.doctor_id == selected_id)
-
         col1, col2 = st.columns(2)
         with col1:
             new_name = st.text_input("Name", value=selected_doc.name)
             new_phone = st.text_input("Phone", value=selected_doc.phone)
         with col2:
             new_price = st.number_input("Price", min_value=100, max_value=500, value=selected_doc.price)
-
         if st.button("Save Changes"):
             selected_doc.name = new_name
             selected_doc.phone = new_phone
@@ -168,11 +158,9 @@ def manager_dashboard():
                 specialization = st.text_input("Specialization")
                 exp = st.number_input("Experience (Years)", min_value=0)
                 price = st.number_input("Price", min_value=100, max_value=350)
-
             new_id = f"{len(st.session_state.doctors)+1:03d}"
             new_room = len(st.session_state.doctors) + 1
             st.info(f"Doctor ID: {new_id} | Room: {new_room}")
-
             if st.form_submit_button("Add Doctor"):
                 st.session_state.doctors.append(
                     Doctor(new_id, name, gender, phone, age, exp, specialization, new_room, price)
@@ -198,10 +186,22 @@ def manager_dashboard():
         else:
             st.info("No doctors available.")
 
+    # ----------------- Appointments Tab (معدل عشان يظهر الحجوزات مع المرض والتفاصيل) -----------------
     with tab5:
-        st.subheader("All Appointments")
+        st.subheader("📆 All Appointments")
         if st.session_state.appointments:
-            st.table(st.session_state.appointments)
+            appointments_data = []
+            for i, app in enumerate(st.session_state.appointments, start=1):
+                appointments_data.append({
+                    "No.": i,
+                    "Disease": app.get("disease", "N/A"),
+                    "Patient": app.get("patient_name", "Unknown"),
+                    "Phone": app.get("patient_phone", "N/A"),
+                    "Doctor": app.get("doctor", "N/A"),
+                    "Day": app.get("day", "N/A"),
+                    "Time": f"{app.get('hour', 'N/A')}:00"
+                })
+            st.table(appointments_data)
         else:
             st.info("No appointments booked yet.")
 
@@ -221,7 +221,6 @@ def manager_dashboard():
             st.metric("Total Appointments", len(st.session_state.appointments))
         with col3:
             st.metric("Registered Patients", len(st.session_state.patients))
-
         if st.session_state.doctors:
             spec_count = {}
             for d in st.session_state.doctors:
