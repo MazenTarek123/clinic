@@ -3,93 +3,46 @@ import streamlit as st
 # إخفاء header, footer, menu
 st.markdown("""
 <style>
-    /* إخفاء عناصر Streamlit */
-    header, #MainMenu, footer {visibility: hidden !important;}
-    .block-container {padding-top: 2rem !important; padding-bottom: 2rem !important;}
-    
-    /* خلفية وخطوط عامة */
-    .stApp {
-        background: linear-gradient(to bottom, #f0f9ff, #ffffff);
-        font-family: 'Segoe UI', sans-serif;
-    }
-    
-    /* عنوان المرض */
-    .disease-tag {
-        text-align: center;
-        background: #2563eb;
-        color: white;
-        padding: 15px;
-        border-radius: 12px;
-        font-size: 24px;
-        font-weight: bold;
-        margin: 20px auto;
-        max-width: 600px;
-    }
-    
-    /* عناوين */
-    h1, h2, h3 {
-        color: #1e40af;
-        text-align: center;
-        font-weight: bold;
-    }
-    
-    /* Radio buttons في الوسط */
-    .stRadio > div {
-        justify-content: center;
-        gap: 2rem;
-    }
-    
-    /* Inputs */
-    .stTextInput > div > div > input, .stNumberInput > div > div > input {
-        border-radius: 10px;
-        border: 1px solid #2563eb;
-        padding: 12px;
-    }
-    
-    /* Labels */
-    .stTextInput > label, .stNumberInput > label, .stSelectbox > label {
-        font-weight: bold;
-        color: #1e40af;
-    }
-    
-    /* Buttons */
-    .stButton > button {
-        background: #2563eb;
-        color: white;
-        font-size: 18px;
-        height: 50px;
-        border-radius: 10px;
-        border: none;
-        width: 100%;
-        font-weight: bold;
-    }
-    .stButton > button:hover {
-        background: #1d4ed8;
-    }
-    
-    /* Success/Error/Warning */
-    .stSuccess, .stError, .stWarning {
-        text-align: center;
-        font-size: 18px;
-        border-radius: 10px;
-    }
-    
-    /* Table */
-    .stTable {
-        margin: 0 auto;
-    }
+    header {visibility: hidden !important;}
+    #MainMenu {visibility: hidden !important;}
+    footer {visibility: hidden !important;}
+    .block-container {padding-top: 2rem;}
 </style>
 """, unsafe_allow_html=True)
 
-st.set_page_config(page_title="Cure & Go | Patient Portal", page_icon="🧑‍🦱", layout="centered")
+st.set_page_config(page_title="Cure & Go | Booking", page_icon="📅", layout="centered")
 
-# جلب اسم المرض
+# ستايل احترافي يشبه موقعك
+st.markdown("""
+<style>
+    .stApp {background: linear-gradient(to bottom, #f0f9ff, #ffffff); font-family: 'Segoe UI', sans-serif;}
+    h1, h2, h3 {color: #1e40af; text-align: center;}
+    .disease-tag {text-align: center; background: #2563eb; color: white; padding: 15px; border-radius: 12px; font-size: 24px; margin: 20px 0; font-weight: bold;}
+    .stSelectbox > div {margin: 10px 0;}
+    .stButton > button {background: #2563eb; color: white; font-size: 18px; height: 50px; border-radius: 10px; width: 100%; font-weight: bold;}
+    .stButton > button:hover {background: #1d4ed8;}
+    .stSuccess, .stWarning {text-align: center; font-size: 18px;}
+    .stTable {margin: 0 auto; border: 1px solid #e0e0e0;}
+</style>
+""", unsafe_allow_html=True)
+
+# جلب اسم المرض من URL
 query_params = st.query_params
 selected_disease = query_params.get("disease", ["General Consultation"])[0]
 
-st.markdown(f"<div class='disease-tag'>Patient Portal - {selected_disease}</div>", unsafe_allow_html=True)
+st.markdown(f"<div class='disease-tag'>Booking for {selected_disease}</div>", unsafe_allow_html=True)
 
-# تعريف Doctor
+# تهيئة البيانات
+if "doctors" not in st.session_state:
+    st.session_state.doctors = []
+if "appointments" not in st.session_state:
+    st.session_state.appointments = []
+if "patients" not in st.session_state:
+    st.session_state.patients = []
+if "current_patient" not in st.session_state:
+    st.session_state.current_patient = None
+
+# تعريف Doctor class
 class Doctor:
     def __init__(self, doctor_id, name, gender, phone, age, exp, specialization, room, price):
         self.doctor_id = doctor_id
@@ -105,17 +58,7 @@ class Doctor:
         hours = ["09", "10", "11", "12", "14", "15", "16", "17"]
         self.schedule = {day: {hour: "available" for hour in hours} for day in days}
 
-# تهيئة البيانات
-if "doctors" not in st.session_state:
-    st.session_state.doctors = []
-if "appointments" not in st.session_state:
-    st.session_state.appointments = []
-if "patients" not in st.session_state:
-    st.session_state.patients = []
-if "current_patient" not in st.session_state:
-    st.session_state.current_patient = None
-
-# دكاترة افتراضية (نفس اللي عندك)
+# إضافة دكاترة افتراضية (نفس البيانات بتاعتك)
 if not st.session_state.doctors:
     st.session_state.doctors = [
         Doctor("001", "Haneen El-Barbary", "Female", "01500111111", 27, 2, "Psychotherapy", 1, 250),
@@ -175,13 +118,13 @@ if st.session_state.current_patient is None:
 
 st.success(f"Welcome {st.session_state.current_patient['name']}!")
 
-# ----------------- Booking --------------------
+# ----------------- Booking (الجزء اللي طلبتوه) --------------------
 st.markdown("<h3>Book New Appointment</h3>", unsafe_allow_html=True)
 
-specializations = list(set(doc.specialization for doc in st.session_state.doctors))
+specializations = list(set(doc.specialization for doc in st.session_state.doctors))  # غيرت all_doctors لـ doctors
 selected_specialization = st.selectbox("Choose a specialization", specializations)
 
-available_doctors = [doc for doc in st.session_state.doctors if doc.specialization == selected_specialization]
+available_doctors = [doc for doc in st.session_state.doctors if doc.specialization == selected_specialization]  # غيرت all_doctors لـ doctors
 selected_doctor = st.selectbox("Choose a doctor", available_doctors, format_func=lambda d: f"Dr {d.name}")
 
 available_days = list(selected_doctor.schedule.keys())
@@ -194,23 +137,22 @@ if available_hours:
     if st.button("Book Appointment"):
         selected_doctor.schedule[selected_day][selected_hour] = "booked"
         appointment = {
-            "disease": selected_disease,
+            "disease": selected_disease,  # تواصل مع المرض من patient.html
             "doctor_id": selected_doctor.doctor_id,
             "doctor": selected_doctor.name,
-            "patient_name": st.session_state.current_patient["name"],
-            "patient_phone": st.session_state.current_patient["phone"],
+            "patient_name": st.session_state["current_patient"]["name"],
+            "patient_phone": st.session_state["current_patient"]["phone"],
             "day": selected_day,
             "hour": selected_hour
         }
-        st.session_state.current_patient["appointments"].append(appointment)
-        st.session_state.appointments.append(appointment)
-        st.success(f"Appointment booked successfully for {selected_disease} with Dr {selected_doctor.name} on {selected_day} at {selected_hour}:00")
-        st.balloons()
+        st.session_state["current_patient"]["appointments"].append(appointment)
+        st.session_state["appointments"].append(appointment)  # تواصل مع المدير
+        st.success(f"Appointment booked successfully with Dr {selected_doctor.name} on {selected_day} at {selected_hour}:00 for {selected_disease}")
 else:
     st.warning("No available hours for this doctor on this day. Please choose another day or doctor.")
 
 # ------------- View & Cancel Appointments -------------
-appointments = st.session_state.current_patient["appointments"]
+appointments = st.session_state["current_patient"]["appointments"]
 if appointments:
     st.markdown("<h3>📋 Your Appointments</h3>", unsafe_allow_html=True)
     display_apps = []
@@ -223,22 +165,21 @@ if appointments:
             "Time": f"{app['hour']}:00"
         })
     st.table(display_apps)
-
+    st.markdown("---")
     st.markdown("<h3>❌ Cancel an Appointment</h3>", unsafe_allow_html=True)
     cancel_options = [f"Dr {app['doctor']} at {app['hour']}:00 on {app['day']}" for app in appointments]
     appointment_to_cancel = st.selectbox("Select an appointment to cancel", cancel_options)
     if st.button("Cancel Appointment"):
         index_to_cancel = cancel_options.index(appointment_to_cancel)
         canceled_app = appointments.pop(index_to_cancel)
-        st.session_state.appointments = [
-            a for a in st.session_state.appointments
-            if not (a['doctor'] == canceled_app['doctor'] and a['day'] == canceled_app['day'] and a['hour'] == canceled_app['hour'])
+        st.session_state["appointments"] = [
+            a for a in st.session_state["appointments"]
+            if not (a["doctor"] == canceled_app["doctor"] and a["day"] == canceled_app["day"] and a["hour"] == canceled_app["hour"])
         ]
-        for doc in st.session_state.doctors:
+        for doc in st.session_state["doctors"]:  # غيرت all_doctors لـ doctors
             if doc.name == canceled_app["doctor"]:
                 doc.schedule[canceled_app["day"]][canceled_app["hour"]] = "available"
                 break
-        st.success("Appointment canceled successfully.")
-        st.rerun()
+        st.success(f"Appointment with Dr {canceled_app['doctor']} on {canceled_app['day']} at {canceled_app['hour']}:00 canceled successfully.")
 else:
     st.info("You have no appointments yet.")
