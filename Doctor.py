@@ -25,31 +25,25 @@ st.set_page_config(
     layout="wide"
 )
 
-# -------------------- Custom CSS (محسّن للقراءة) --------------------
+# -------------------- Custom CSS (نفس الاستايل الجميل) --------------------
 st.markdown("""
 <style>
 .stApp {
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
     font-family: 'Segoe UI', sans-serif;
-    color: #1e293b;  /* لون نص غامق عام */
 }
-
-/* العناوين الرئيسية */
 .main-title {
     font-size: 42px;
     font-weight: 800;
     text-align: center;
-    color: #1e293b;
+    color: #1f2937;
     animation: fadeDown 1s ease;
 }
 .sub-title {
     text-align: center;
-    color: #475569;
+    color: #374151;
     margin-bottom: 35px;
-    font-size: 18px;
 }
-
-/* الأزرار */
 .stButton>button {
     border-radius: 14px;
     padding: 12px;
@@ -61,59 +55,7 @@ st.markdown("""
 }
 .stButton>button:hover {
     transform: scale(1.06);
-    background: linear-gradient(90deg, #1d4ed8, #1e40af);
 }
-
-/* تحسين الـ inputs والـ selectbox والـ text area */
-div[data-baseweb="input"] input,
-div[data-baseweb="select"] > div,
-.stTextInput > div > div > input,
-.stTextArea > div > div > textarea {
-    background-color: #ffffff !important;
-    color: #1e293b !important;
-    border-radius: 10px;
-    border: 1px solid #cbd5e1;
-}
-
-/* خلفية البوكسات الفاتحة */
-.css-1d391kg, .stSelectbox > div > div,
-.stTextInput > div > div,
-.stTextArea > div > div {
-    background-color: #ffffff !important;
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-/* الجداول */
-.stDataFrame, .stTable table {
-    background-color: white !important;
-}
-.stTable td, .stTable th {
-    color: #1e293b !important;
-}
-
-/* الـ sidebar */
-section[data-testid="stSidebar"] {
-    background-color: #f1f5f9;
-    border-right: 1px solid #e2e8f0;
-}
-.css-1v3fvzy, .css-1d391kg {  /* نصوص الـ sidebar */
-    color: #1e293b !important;
-}
-
-/* الـ info والـ success والـ error */
-.stAlert {
-    background-color: white !important;
-    color: #1e293b !important;
-    border-radius: 10px;
-}
-
-/* أزرار إدارة المواعيد (متاح/غير متاح) */
-button[kind="secondary"] {
-    background-color: #e2e8f0 !important;
-    color: #1e293b !important;
-}
-
 @keyframes fadeDown {
     from {opacity:0; transform:translateY(-30px);}
     to {opacity:1; transform:translateY(0);}
@@ -160,6 +102,7 @@ if 'logged_in_doctor' not in st.session_state:
 
 # -------------------- Doctor Portal --------------------
 def doctor_portal():
+    # العنوان الرئيسي والفرعي بنفس الاستايل
     st.markdown("<div class='main-title'>👨‍⚕️ Doctor Portal</div>", unsafe_allow_html=True)
     st.markdown("<div class='sub-title'>Cure & Go Medical Center</div>", unsafe_allow_html=True)
 
@@ -185,7 +128,7 @@ def doctor_portal():
     # ---------- Dashboard ----------
     doctor = st.session_state['logged_in_doctor']
 
-    # Sidebar
+    # Sidebar مع تصميم أنيق
     with st.sidebar:
         st.title(f"👨‍⚕️ Dr. {doctor.name}")
         st.write(f"**Specialization:** {doctor.specialization}")
@@ -216,12 +159,13 @@ def doctor_portal():
         st.subheader("⚙️ Manage Work Schedule")
         selected_day = st.selectbox("Select Day to Edit", list(doctor.schedule.keys()))
 
-        st.markdown(f"**{selected_day}** – Click to toggle availability (10:00 to 17:00)")
+        st.markdown(f"**{selected_day}** – Toggle hours (10:00 to 17:00)")
         col1, col2, col3 = st.columns(3)
 
         for i in range(10, 18):
             status = doctor.schedule[selected_day][i]
             btn_label = f"{i}:00 - {'✅ Available' if status == 'available' else '⛔ Not Available'}"
+            color = "background-color: #10b981;" if status == 'available' else "background-color: #ef4444;"
             col = col1 if i < 13 else col2 if i < 15 else col3
             with col:
                 if st.button(btn_label, key=f"{selected_day}_{i}", use_container_width=True):
