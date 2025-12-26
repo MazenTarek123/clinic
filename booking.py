@@ -241,19 +241,36 @@ if available_hours:
 else:
     st.warning("No available hours for this doctor on this day.")
 
-# ---------------- View Appointments ----------------
+#------------- view & cancel appointments -------------
 appointments = st.session_state.current_patient["appointments"]
-
 if appointments:
     st.subheader("📋 Your Appointments")
-    st.table([
-        {
-            "Disease": app["disease"],
+    display_apps = []
+    for i, app in enumerate(appointments, start=1):
+        display_apps.append({
+            "No.": i,
+            "Disease": app.get("disease", "N/A"),
             "Doctor": f"Dr {app['doctor']}",
             "Day": app["day"],
             "Time": f"{app['hour']}:00"
-        }
-        for app in appointments
-    ])
+        })
+    st.table(display_apps)
+    st.markdown("---")
+    st.subheader("❌ Cancel an Appointment")
+    cancel_options = [f"Dr {app['doctor']} at {app['hour']}:00 on {app['day']}" for app in appointments]
+    appointment_to_cancel = st.selectbox("Select an appointment to cancel", cancel_options)
+    if st.button("Cancel Appointment"):
+        index_to_cancel = cancel_options.index(appointment_to_cancel)
+        canceled_app = appointments.pop(index_to_cancel)
+        st.session_state.appointments = [
+            a for a in st.session_state.appointments
+            if not (a['doctor'] == canceled_app['doctor'] and a['day'] == canceled_app['day'] and a['hour'] == canceled_app['hour'])
+        ]
+        for doc in st.session_state.doctors:
+            if doc.name == canceled_app["doctor"]:
+                doc.schedule[canceled_app["day"]][canceled_app["hour"]] = "available"
+                break
+        st.success("Appointment canceled successfully.")
 else:
     st.info("You have no appointments yet.")
+
