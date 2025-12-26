@@ -1,16 +1,12 @@
 import streamlit as st
 
-# إخفاء header, footer, menu
+# إخفاء header, footer, menu فقط
 st.markdown("""
 <style>
     header {visibility: hidden !important;}
     #MainMenu {visibility: hidden !important;}
     footer {visibility: hidden !important;}
     .block-container {padding-top: 2rem;}
-    /* خلفية فاتحة زي موقعك */
-    .stApp {
-        background-color: #f0f9ff;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -48,7 +44,7 @@ class Doctor:
         hours = ["09", "10", "11", "12", "14", "15", "16", "17"]
         self.schedule = {day: {hour: "available" for hour in hours} for day in days}
 
-# دكاترة افتراضية (نفس البيانات بتاعتك)
+# دكاترة افتراضية
 if not st.session_state.doctors:
     st.session_state.doctors = [
         Doctor("001", "Haneen El-Barbary", "Female", "01500111111", 27, 2, "Psychotherapy", 1, 250),
@@ -71,16 +67,15 @@ if option == "Create Account":
     age = st.number_input("Enter your age", min_value=1, step=1)
     phone_number = st.text_input("Enter your phone number")
     if st.button("Create Account"):
-        if name and phone_number:
-            patient = {
-                "name": name,
-                "age": age,
-                "phone": phone_number,
-                "appointments": []
-            }
-            st.session_state.patients.append(patient)
-            st.session_state.current_patient = patient
-            st.success(f"Account created successfully! Welcome {name}")
+        patient = {
+            "name": name,
+            "age": age,
+            "phone": phone_number,
+            "appointments": []
+        }
+        st.session_state.patients.append(patient)
+        st.session_state.current_patient = patient
+        st.success(f"Account created successfully! Welcome {name}")
 
 if option == "Login":
     phone = st.text_input("Enter your phone number to login")
@@ -99,8 +94,8 @@ if option == "Login":
 if st.session_state.current_patient is None:
     st.warning("Please login or create an account first.")
     st.stop()
-else:
-    st.success(f"Welcome {st.session_state.current_patient['name']}")
+
+st.success(f"Welcome {st.session_state.current_patient['name']}!")
 
 #----------------- booking --------------------
 specializations = list(set(doc.specialization for doc in st.session_state.doctors))
@@ -128,7 +123,7 @@ if available_hours:
             "hour": selected_hour
         }
         st.session_state.current_patient["appointments"].append(appointment)
-        st.session_state.appointments.append(appointment)  # ده اللي بيخلي الحجز يظهر عند المدير
+        st.session_state.appointments.append(appointment)
         st.success(f"Appointment booked successfully with Dr {selected_doctor.name} on {selected_day} at {selected_hour}:00")
 else:
     st.warning("No available hours for this doctor on this day. Please choose another day or doctor.")
@@ -162,6 +157,6 @@ if appointments:
             if doc.name == canceled_app["doctor"]:
                 doc.schedule[canceled_app["day"]][canceled_app["hour"]] = "available"
                 break
-        st.success(f"Appointment with Dr {canceled_app['doctor']} on {canceled_app['day']} at {canceled_app['hour']}:00 canceled successfully.")
+        st.success("Appointment canceled successfully.")
 else:
     st.info("You have no appointments yet.")
