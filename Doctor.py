@@ -110,7 +110,7 @@ def doctor_portal():
     if st.session_state['logged_in_doctor'] is None:
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.markdown("### 🔐 Doctor Login")
+           st.markdown("<h3 style='color: #1e293b; text-align: center; font-weight: 700; margin-bottom: 20px;'>🔐 Doctor Login</h3>", unsafe_allow_html=True)
             doc_id_input = st.text_input("Enter Doctor ID (3 digits)", max_chars=3, placeholder="مثال: 001")
             if st.button("Login", use_container_width=True):
                 if len(doc_id_input) == 3 and doc_id_input.isdigit():
@@ -185,3 +185,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
