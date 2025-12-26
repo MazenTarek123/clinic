@@ -1,8 +1,5 @@
 import streamlit as st
 
-# ======================================================
-# Streamlit (Header + Menu + Footer + Hamburger)
-# ======================================================
 hide_streamlit_elements = """
 <style>
     header {visibility: hidden !important;}
@@ -21,18 +18,12 @@ hide_streamlit_elements = """
 """
 st.markdown(hide_streamlit_elements, unsafe_allow_html=True)
 
-# ======================================================
-# Page Config
-# ======================================================
 st.set_page_config(
     page_title="Cure & Go | Admin",
     page_icon="🛠️",
     layout="wide"
 )
 
-# ======================================================
-# CSS 
-# ======================================================
 st.markdown("""
 <style>
 .stApp {
@@ -40,7 +31,6 @@ st.markdown("""
     font-family: 'Segoe UI', sans-serif;
 }
 
-/* Titles */
 .main-title {
     font-size: 42px;
     font-weight: 800;
@@ -54,7 +44,6 @@ st.markdown("""
     margin-bottom: 35px;
 }
 
-/* Buttons */
 .stButton>button {
     border-radius: 14px;
     padding: 12px;
@@ -75,9 +64,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ======================================================
-# Doctor Class & Data & Login 
-# ======================================================
 class Doctor:
     def __init__(self, doctor_id, name, gender, phone, age, exp, spec, room, price):
         self.doctor_id = doctor_id
@@ -102,7 +88,6 @@ if "doctors" not in st.session_state:
         Doctor("008", "Mazen Tarek", "Male", "01000888888", 32, 5, "Neurology", 8, 350),
     ]
 
-# إضافة متغيرات جديدة للـ appointments والـ patients (لو مش موجودة)
 if "appointments" not in st.session_state:
     st.session_state.appointments = []
 if "patients" not in st.session_state:
@@ -128,26 +113,21 @@ def manager_login():
             else:
                 st.error("Wrong username or password")
 
-# ======================================================
-# Dashboard (مع إضافة الـ tabs الجديدة)
-# ======================================================
 def manager_dashboard():
     st.markdown("<div class='main-title'>🛠 Admin Dashboard</div>", unsafe_allow_html=True)
     st.markdown("<div class='sub-title'>Manage Doctors & Clinic System</div>", unsafe_allow_html=True)
 
-    # Sidebar
     st.sidebar.title("🏥 Cure & Go Clinic")
+    
     if st.sidebar.button("🚪 Logout"):
         st.session_state.manager_logged = False
         st.rerun()
 
-    # 7 Tabs الجديدة
     tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
         "👨‍⚕️ Doctors", "➕ Add Doctor", "❌ Delete Doctor",
         "🗓️ Schedules", "📆 Appointments", "👥 Patients", "📊 Statistics"
     ])
 
-    # Tab 1: Doctors + Edit Doctor
     with tab1:
         doctors_data = [{
             "ID": d.doctor_id, "Name": d.name, "Gender": d.gender, "Phone": d.phone,
@@ -177,7 +157,6 @@ def manager_dashboard():
             st.success("Doctor updated successfully!")
             st.rerun()
 
-    # Tab 2 & 3: Add & Delete (زي ما كانوا)
     with tab2:
         with st.form("add_doctor"):
             col1, col2 = st.columns(2)
@@ -211,7 +190,6 @@ def manager_dashboard():
             st.success("Doctor Deleted Successfully")
             st.rerun()
 
-    # Tab 4: Schedules (جديد)
     with tab4:
         st.subheader("Doctors' Schedules Summary")
         if st.session_state.doctors:
@@ -221,7 +199,6 @@ def manager_dashboard():
         else:
             st.info("No doctors available.")
 
-    # Tab 5: Appointments (جديد)
     with tab5:
         st.subheader("All Appointments")
         if st.session_state.appointments:
@@ -229,7 +206,6 @@ def manager_dashboard():
         else:
             st.info("No appointments booked yet.")
 
-    # Tab 6: Patients (جديد)
     with tab6:
         st.subheader("Registered Patients")
         if st.session_state.patients:
@@ -237,7 +213,6 @@ def manager_dashboard():
         else:
             st.info("No patients registered yet.")
 
-    # Tab 7: Statistics (موسع)
     with tab7:
         st.subheader("Clinic Statistics")
         col1, col2, col3 = st.columns(3)
@@ -254,9 +229,6 @@ def manager_dashboard():
                 spec_count[d.specialization] = spec_count.get(d.specialization, 0) + 1
             st.bar_chart(spec_count)
 
-# ======================================================
-# Main
-# ======================================================
 def main():
     if not st.session_state.manager_logged:
         manager_login()
