@@ -21,9 +21,10 @@ footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- Custom Style ----------------
+# ---------------- Custom Style (FIXED UI) ----------------
 st.markdown("""
 <style>
+/* Background */
 .stApp {
     background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
     font-family: 'Segoe UI', sans-serif;
@@ -44,12 +45,53 @@ st.markdown("""
     font-size: 18px;
 }
 
-/* Buttons */
+/* Labels & Text */
+label, p, h1, h2, h3, h4, span {
+    color: #1f2937 !important;
+}
+
+/* ===== INPUTS ===== */
+input, textarea {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-radius: 12px !important;
+    border: 1px solid #d1d5db !important;
+    padding: 10px !important;
+}
+
+div[data-baseweb="input"] > div {
+    background-color: #ffffff !important;
+}
+
+/* ===== SELECTBOX ===== */
+div[data-baseweb="select"] > div {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-radius: 12px !important;
+    border: 1px solid #d1d5db !important;
+}
+
+div[data-baseweb="select"] span {
+    color: #111827 !important;
+}
+
+ul[role="listbox"] {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+}
+
+/* ===== RADIO ===== */
+.stRadio label {
+    color: #1f2937 !important;
+    font-weight: 600;
+}
+
+/* ===== BUTTON ===== */
 .stButton > button {
     border-radius: 14px;
     padding: 12px;
     background: linear-gradient(90deg, #2563eb, #1d4ed8);
-    color: white;
+    color: white !important;
     font-weight: bold;
     border: none;
     transition: 0.3s;
@@ -59,69 +101,9 @@ st.markdown("""
     transform: scale(1.05);
 }
 
-/* Normal text */
-p, label, h1, h2, h3, h4 {
-    color: #1f2937 !important;
-}
-
-/* Inputs text */
-input, textarea {
-    color: #111827 !important;
-}
-
-/* ===== SELECTBOX LIGHT FIX ===== */
-
-/* الصندوق نفسه */
-div[data-baseweb="select"] > div {
-    background-color: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 12px !important;
-    min-height: 48px;
-}
-
-/* النص المختار */
-div[data-baseweb="select"] span {
-    color: #111827 !important;
-    font-weight: 500;
-}
-
-/* السهم */
-div[data-baseweb="select"] svg {
-    fill: #374151 !important;
-}
-
-/* عند التركيز */
-div[data-baseweb="select"]:focus-within > div {
-    border-color: #2563eb !important;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-}
-
-/* القائمة المنسدلة */
-ul[role="listbox"] {
-    background-color: #ffffff !important;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-}
-
-/* عناصر القائمة */
-ul[role="listbox"] li {
-    color: #111827 !important;
-}
-
-/* hover */
-ul[role="listbox"] li:hover {
-    background-color: #eff6ff !important;
-}
-
-/* Radio buttons */
-.stRadio label {
-    color: #1f2937 !important;
-    font-weight: 600;
-}
-
-/* Tables */
-table, th, td {
-    color: #111827 !important;
+/* ===== ALERTS ===== */
+.stAlert {
+    border-radius: 14px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -223,7 +205,11 @@ specializations = list(set(doc.specialization for doc in st.session_state.doctor
 selected_specialization = st.selectbox("Choose a specialization", specializations)
 
 available_doctors = [doc for doc in st.session_state.doctors if doc.specialization == selected_specialization]
-selected_doctor = st.selectbox("Choose a doctor", available_doctors, format_func=lambda d: f"Dr {d.name}")
+selected_doctor = st.selectbox(
+    "Choose a doctor",
+    available_doctors,
+    format_func=lambda d: f"Dr {d.name}"
+)
 
 selected_day = st.selectbox("Choose a day", list(selected_doctor.schedule.keys()))
 
