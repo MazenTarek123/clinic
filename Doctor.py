@@ -102,7 +102,6 @@ if 'logged_in_doctor' not in st.session_state:
 
 # -------------------- Doctor Portal --------------------
 def doctor_portal():
-    # العنوان الرئيسي والفرعي بنفس الاستايل
     st.markdown("<div class='main-title'>👨‍⚕️ Doctor Portal</div>", unsafe_allow_html=True)
     st.markdown("<div class='sub-title'>Cure & Go Medical Center</div>", unsafe_allow_html=True)
 
@@ -110,8 +109,18 @@ def doctor_portal():
     if st.session_state['logged_in_doctor'] is None:
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.markdown("### 🔐 Doctor Login")
-            doc_id_input = st.text_input("Enter Doctor ID (3 digits)", max_chars=3, placeholder="مثال: 001")
+            # غيرنا لون Doctor Login
+            st.markdown("<h3 style='color: #1e293b; text-align: center; font-weight: 700;'>🔐 Doctor Login</h3>", unsafe_allow_html=True)
+            # غيرنا لون label الـ text_input
+            doc_id_input = st.text_input(
+                "<span style='color: #1e293b; font-weight: 600;'>Enter Doctor ID (3 digits)</span>",
+                max_chars=3,
+                placeholder="مثال: 001",
+                label_visibility="collapsed"  # نخفي الـ label الأصلي ونستخدم الـ HTML
+            )
+            # نعيد عرض الـ label الجديد فوق الـ input
+            st.markdown("<p style='color: #1e293b; font-weight: 600; margin-top: -10px; margin-bottom: 20px;'>Enter Doctor ID (3 digits)</p>", unsafe_allow_html=True)
+
             if st.button("Login", use_container_width=True):
                 if len(doc_id_input) == 3 and doc_id_input.isdigit():
                     found_doc = next((d for d in st.session_state['all_doctors'] if d.doctor_id == doc_id_input), None)
@@ -128,7 +137,6 @@ def doctor_portal():
     # ---------- Dashboard ----------
     doctor = st.session_state['logged_in_doctor']
 
-    # Sidebar مع تصميم أنيق
     with st.sidebar:
         st.title(f"👨‍⚕️ Dr. {doctor.name}")
         st.write(f"**Specialization:** {doctor.specialization}")
@@ -138,7 +146,9 @@ def doctor_portal():
 
     # ---------- My Appointments ----------
     if menu == "📅 My Appointments":
-        st.subheader("📅 My Scheduled Appointments")
+        # غيرنا لون My Scheduled Appointments
+        st.markdown("<h2 style='color: #1e293b; font-weight: 700; margin-top: 30px;'>📅 My Scheduled Appointments</h2>", unsafe_allow_html=True)
+
         my_appointments = [a for a in st.session_state['appointments'] if a['doctor_id'] == doctor.doctor_id]
         if my_appointments:
             display_data = [
@@ -156,16 +166,24 @@ def doctor_portal():
 
     # ---------- Manage Availability ----------
     elif menu == "⚙️ Manage Availability":
-        st.subheader("⚙️ Manage Work Schedule")
-        selected_day = st.selectbox("Select Day to Edit", list(doctor.schedule.keys()))
+        # غيرنا لون Manage Work Schedule
+        st.markdown("<h2 style='color: #1e293b; font-weight: 700; margin-top: 30px;'>⚙️ Manage Work Schedule</h2>", unsafe_allow_html=True)
 
-        st.markdown(f"**{selected_day}** – Toggle hours (10:00 to 17:00)")
+        # غيرنا لون label الـ selectbox
+        selected_day = st.selectbox(
+            "<span style='color: #1e293b; font-weight: 600;'>Select Day to Edit</span>",
+            list(doctor.schedule.keys()),
+            label_visibility="collapsed"
+        )
+        st.markdown("<p style='color: #1e293b; font-weight: 600; margin-top: -10px; margin-bottom: 20px;'>Select Day to Edit</p>", unsafe_allow_html=True)
+
+        # غيرنا لون النص التوضيحي لليوم والساعات
+        st.markdown(f"<p style='color: #1e293b; font-weight: 600; font-size: 18px; margin: 30px 0 20px 0;'><strong>{selected_day}</strong> – Toggle hours (10:00 to 17:00)</p>", unsafe_allow_html=True)
+
         col1, col2, col3 = st.columns(3)
-
         for i in range(10, 18):
             status = doctor.schedule[selected_day][i]
             btn_label = f"{i}:00 - {'✅ Available' if status == 'available' else '⛔ Not Available'}"
-            color = "background-color: #10b981;" if status == 'available' else "background-color: #ef4444;"
             col = col1 if i < 13 else col2 if i < 15 else col3
             with col:
                 if st.button(btn_label, key=f"{selected_day}_{i}", use_container_width=True):
