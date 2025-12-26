@@ -184,12 +184,12 @@ a {
 .landing .container .links {
     text-align: left;
     margin-top: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
     
-}
-@media (max-width:991px) {
-    .landing .container .links {
-        text-align: center;
-    }
 }
 .landing .container .links a {
     font-weight: bold;
@@ -213,9 +213,6 @@ a {
     background-color: #fff;
     color: var(--main-coloe-alt);
     border: 2px solid var(--main-coloe-alt);
-}
-.landing .container .links a:nth-child(2) {
-    margin-left: 50px;
 }
 /* end landing  */
 /* start header  */
