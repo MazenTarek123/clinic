@@ -25,7 +25,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# -------------------- Custom CSS (نفس الاستايل الجميل) --------------------
+# -------------------- Custom CSS  --------------------
 st.markdown("""
 <style>
 .stApp {
@@ -109,16 +109,16 @@ def doctor_portal():
     if st.session_state['logged_in_doctor'] is None:
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            # غيرنا لون Doctor Login
+            #  Doctor Login
             st.markdown("<h3 style='color: #1e293b; text-align: center; font-weight: 700;'>🔐 Doctor Login</h3>", unsafe_allow_html=True)
-            # غيرنا لون label الـ text_input
+            #  text_input
             doc_id_input = st.text_input(
                 "<span style='color: #1e293b; font-weight: 600;'>Enter Doctor ID (3 digits)</span>",
                 max_chars=3,
                 placeholder="مثال: 001",
-                label_visibility="collapsed"  # نخفي الـ label الأصلي ونستخدم الـ HTML
+                label_visibility="collapsed"  
             )
-            # نعيد عرض الـ label الجديد فوق الـ input
+        
             st.markdown("<p style='color: #1e293b; font-weight: 600; margin-top: -10px; margin-bottom: 20px;'>Enter Doctor ID (3 digits)</p>", unsafe_allow_html=True)
 
             if st.button("Login", use_container_width=True):
@@ -146,7 +146,7 @@ def doctor_portal():
 
     # ---------- My Appointments ----------
     if menu == "📅 My Appointments":
-        # غيرنا لون My Scheduled Appointments
+        
         st.markdown("<h2 style='color: #1e293b; font-weight: 700; margin-top: 30px;'>📅 My Scheduled Appointments</h2>", unsafe_allow_html=True)
 
         my_appointments = [a for a in st.session_state['appointments'] if a['doctor_id'] == doctor.doctor_id]
@@ -166,10 +166,10 @@ def doctor_portal():
 
     # ---------- Manage Availability ----------
     elif menu == "⚙️ Manage Availability":
-        # غيرنا لون Manage Work Schedule
+        # Manage Work Schedule
         st.markdown("<h2 style='color: #1e293b; font-weight: 700; margin-top: 30px;'>⚙️ Manage Work Schedule</h2>", unsafe_allow_html=True)
 
-        # غيرنا لون label الـ selectbox
+        # selectbox
         selected_day = st.selectbox(
             "<span style='color: #1e293b; font-weight: 600;'>Select Day to Edit</span>",
             list(doctor.schedule.keys()),
@@ -177,7 +177,7 @@ def doctor_portal():
         )
         st.markdown("<p style='color: #1e293b; font-weight: 600; margin-top: -10px; margin-bottom: 20px;'>Select Day to Edit</p>", unsafe_allow_html=True)
 
-        # غيرنا لون النص التوضيحي لليوم والساعات
+        
         st.markdown(f"<p style='color: #1e293b; font-weight: 600; font-size: 18px; margin: 30px 0 20px 0;'><strong>{selected_day}</strong> – Toggle hours (10:00 to 17:00)</p>", unsafe_allow_html=True)
 
         col1, col2, col3 = st.columns(3)
@@ -203,3 +203,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
