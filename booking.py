@@ -1,22 +1,73 @@
 import streamlit as st
 
-# إخفاء header, footer, menu فقط
-st.markdown("""
+# إخفاء header, footer, menu
+hide_streamlit_elements = """
 <style>
     header {visibility: hidden !important;}
     #MainMenu {visibility: hidden !important;}
     footer {visibility: hidden !important;}
-    .block-container {padding-top: 2rem;}
+    .block-container {
+        padding-top: 0rem !important;
+        padding-bottom: 0rem !important;
+    }
+    .main > div {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+</style>
+"""
+st.markdown(hide_streamlit_elements, unsafe_allow_html=True)
+
+st.set_page_config(
+    page_title="Cure & Go | Patient Portal",
+    page_icon="🧑‍🦱",
+    layout="wide"
+)
+
+# نفس الستايل بتاع الـ Admin بالظبط
+st.markdown("""
+<style>
+.stApp {
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    font-family: 'Segoe UI', sans-serif;
+}
+.main-title {
+    font-size: 42px;
+    font-weight: 800;
+    text-align: center;
+    color: #1f2937;
+    animation: fadeDown 1s ease;
+}
+.sub-title {
+    text-align: center;
+    color: #374151;
+    margin-bottom: 35px;
+}
+.stButton>button {
+    border-radius: 14px;
+    padding: 12px;
+    background: linear-gradient(90deg, #2563eb, #1d4ed8);
+    color: white;
+    font-weight: bold;
+    border: none;
+    transition: 0.3s;
+}
+.stButton>button:hover {
+    transform: scale(1.06);
+}
+@keyframes fadeDown {
+    from {opacity:0; transform:translateY(-30px);}
+    to {opacity:1; transform:translateY(0);}
+}
 </style>
 """, unsafe_allow_html=True)
-
-st.set_page_config(page_title="Cure & Go | Patient Portal", page_icon="🧑‍🦱", layout="centered")
 
 # جلب اسم المرض من URL
 query_params = st.query_params
 selected_disease = query_params.get("disease", ["General Consultation"])[0]
 
-st.title(f"Patient Portal - {selected_disease}")
+st.markdown("<div class='main-title'>🧑‍🦱 Patient Portal</div>", unsafe_allow_html=True)
+st.markdown(f"<div class='sub-title'>Booking for {selected_disease}</div>", unsafe_allow_html=True)
 
 # تهيئة البيانات
 if "doctors" not in st.session_state:
@@ -58,8 +109,6 @@ if not st.session_state.doctors:
     ]
 
 # ---------- Login or Create Account ----------
-st.header("🧑‍🦱 Patient Portal")
-
 option = st.radio("Do you want to Login or Create a New Account?", ["Login", "Create Account"])
 
 if option == "Create Account":
@@ -67,15 +116,16 @@ if option == "Create Account":
     age = st.number_input("Enter your age", min_value=1, step=1)
     phone_number = st.text_input("Enter your phone number")
     if st.button("Create Account"):
-        patient = {
-            "name": name,
-            "age": age,
-            "phone": phone_number,
-            "appointments": []
-        }
-        st.session_state.patients.append(patient)
-        st.session_state.current_patient = patient
-        st.success(f"Account created successfully! Welcome {name}")
+        if name and phone_number:
+            patient = {
+                "name": name,
+                "age": age,
+                "phone": phone_number,
+                "appointments": []
+            }
+            st.session_state.patients.append(patient)
+            st.session_state.current_patient = patient
+            st.success(f"Account created successfully! Welcome {name}")
 
 if option == "Login":
     phone = st.text_input("Enter your phone number to login")
@@ -94,8 +144,8 @@ if option == "Login":
 if st.session_state.current_patient is None:
     st.warning("Please login or create an account first.")
     st.stop()
-
-st.success(f"Welcome {st.session_state.current_patient['name']}!")
+else:
+    st.success(f"Welcome {st.session_state.current_patient['name']}")
 
 #----------------- booking --------------------
 specializations = list(set(doc.specialization for doc in st.session_state.doctors))
