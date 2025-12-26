@@ -14,10 +14,6 @@ hide_streamlit_elements = """
         padding-left: 1rem;
         padding-right: 1rem;
     }
-    /* إخفاء زر إغلاق الـ sidebar تمامًا (عشان تبقى دائمًا مفتوحة) */
-    button[data-testid="collapsedControl"] {
-        display: none !important;
-    }
 </style>
 """
 st.markdown(hide_streamlit_elements, unsafe_allow_html=True)
@@ -26,8 +22,7 @@ st.markdown(hide_streamlit_elements, unsafe_allow_html=True)
 st.set_page_config(
     page_title="Cure & Go | Doctor Portal",
     page_icon="👨‍⚕️",
-    layout="wide",
-    initial_sidebar_state="expanded"  # الـ sidebar تفتح دائمًا من البداية
+    layout="wide"
 )
 
 # -------------------- Custom CSS (نفس الاستايل الجميل) --------------------
@@ -68,9 +63,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# باقي الكود زي ما هو (الـ Data Class والـ Doctors والـ Portal)
-# ... (كل الكود اللي تحت زي ما كان بالضبط، مفيش تغيير تاني)
-
+# -------------------- Data Class --------------------
 class Doctor:
     def __init__(self, doctor_id, name, gender, phone, age, experience, specialization, room, price):
         self.doctor_id = doctor_id
@@ -88,6 +81,7 @@ class Doctor:
         days = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
         self.schedule = {day: {hour: "available" for hour in range(10, 18)} for day in days}
 
+# -------------------- Initialize Doctors --------------------
 if 'all_doctors' not in st.session_state:
     st.session_state['all_doctors'] = [
         Doctor("001", "Haneen El-Barbary", "Female", "01500111111", 27, 2, "Psychotherapy", 1, 250),
@@ -106,21 +100,27 @@ if 'appointments' not in st.session_state:
 if 'logged_in_doctor' not in st.session_state:
     st.session_state['logged_in_doctor'] = None
 
+# -------------------- Doctor Portal --------------------
 def doctor_portal():
     st.markdown("<div class='main-title'>👨‍⚕️ Doctor Portal</div>", unsafe_allow_html=True)
     st.markdown("<div class='sub-title'>Cure & Go Medical Center</div>", unsafe_allow_html=True)
 
+    # ---------- Login ----------
     if st.session_state['logged_in_doctor'] is None:
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
+            # غيرنا لون Doctor Login
             st.markdown("<h3 style='color: #1e293b; text-align: center; font-weight: 700;'>🔐 Doctor Login</h3>", unsafe_allow_html=True)
+            # غيرنا لون label الـ text_input
             doc_id_input = st.text_input(
                 "<span style='color: #1e293b; font-weight: 600;'>Enter Doctor ID (3 digits)</span>",
                 max_chars=3,
                 placeholder="مثال: 001",
-                label_visibility="collapsed"
+                label_visibility="collapsed"  # نخفي الـ label الأصلي ونستخدم الـ HTML
             )
+            # نعيد عرض الـ label الجديد فوق الـ input
             st.markdown("<p style='color: #1e293b; font-weight: 600; margin-top: -10px; margin-bottom: 20px;'>Enter Doctor ID (3 digits)</p>", unsafe_allow_html=True)
+
             if st.button("Login", use_container_width=True):
                 if len(doc_id_input) == 3 and doc_id_input.isdigit():
                     found_doc = next((d for d in st.session_state['all_doctors'] if d.doctor_id == doc_id_input), None)
@@ -134,6 +134,7 @@ def doctor_portal():
                     st.error("Invalid ID format. Must be exactly 3 digits.")
         return
 
+    # ---------- Dashboard ----------
     doctor = st.session_state['logged_in_doctor']
 
     with st.sidebar:
@@ -143,8 +144,11 @@ def doctor_portal():
         st.markdown("---")
         menu = st.radio("Navigation", ["📅 My Appointments", "⚙️ Manage Availability", "🚪 Logout"])
 
+    # ---------- My Appointments ----------
     if menu == "📅 My Appointments":
+        # غيرنا لون My Scheduled Appointments
         st.markdown("<h2 style='color: #1e293b; font-weight: 700; margin-top: 30px;'>📅 My Scheduled Appointments</h2>", unsafe_allow_html=True)
+
         my_appointments = [a for a in st.session_state['appointments'] if a['doctor_id'] == doctor.doctor_id]
         if my_appointments:
             display_data = [
@@ -160,15 +164,22 @@ def doctor_portal():
         else:
             st.info("You have no upcoming appointments yet.")
 
+    # ---------- Manage Availability ----------
     elif menu == "⚙️ Manage Availability":
+        # غيرنا لون Manage Work Schedule
         st.markdown("<h2 style='color: #1e293b; font-weight: 700; margin-top: 30px;'>⚙️ Manage Work Schedule</h2>", unsafe_allow_html=True)
+
+        # غيرنا لون label الـ selectbox
         selected_day = st.selectbox(
             "<span style='color: #1e293b; font-weight: 600;'>Select Day to Edit</span>",
             list(doctor.schedule.keys()),
             label_visibility="collapsed"
         )
         st.markdown("<p style='color: #1e293b; font-weight: 600; margin-top: -10px; margin-bottom: 20px;'>Select Day to Edit</p>", unsafe_allow_html=True)
+
+        # غيرنا لون النص التوضيحي لليوم والساعات
         st.markdown(f"<p style='color: #1e293b; font-weight: 600; font-size: 18px; margin: 30px 0 20px 0;'><strong>{selected_day}</strong> – Toggle hours (10:00 to 17:00)</p>", unsafe_allow_html=True)
+
         col1, col2, col3 = st.columns(3)
         for i in range(10, 18):
             status = doctor.schedule[selected_day][i]
@@ -181,10 +192,12 @@ def doctor_portal():
                     st.success(f"{i}:00 updated to **{new_status}**")
                     st.rerun()
 
+    # ---------- Logout ----------
     elif menu == "🚪 Logout":
         st.session_state['logged_in_doctor'] = None
         st.rerun()
 
+# -------------------- Main --------------------
 def main():
     doctor_portal()
 
