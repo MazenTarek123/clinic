@@ -1,12 +1,10 @@
 import streamlit as st
 
-
 # ======================================================
 # Streamlit (Header + Menu + Footer + Hamburger)
 # ======================================================
 hide_streamlit_elements = """
 <style>
-    
     header {visibility: hidden !important;}
     #MainMenu {visibility: hidden !important;}
     section[data-testid="stSidebar"] > div:first-child {visibility: hidden !important;}
@@ -15,8 +13,6 @@ hide_streamlit_elements = """
         padding-top: 0rem !important;
         padding-bottom: 0rem !important;
     }
-    
-   
     .main > div {
         padding-left: 1rem;
         padding-right: 1rem;
@@ -35,7 +31,7 @@ st.set_page_config(
 )
 
 # ======================================================
-# CSS (شيلنا كل حاجة متعلقة بالـ card والأنيميشن)
+# CSS 
 # ======================================================
 st.markdown("""
 <style>
@@ -72,7 +68,6 @@ st.markdown("""
     transform: scale(1.06);
 }
 
-/* Animation للعنوان الرئيسي بس */
 @keyframes fadeDown {
     from {opacity:0; transform:translateY(-30px);}
     to {opacity:1; transform:translateY(0);}
@@ -81,7 +76,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ======================================================
-# Doctor Class & Data & Login (بدون تغيير)
+# Doctor Class & Data & Login 
 # ======================================================
 class Doctor:
     def __init__(self, doctor_id, name, gender, phone, age, exp, spec, room, price):
@@ -107,6 +102,12 @@ if "doctors" not in st.session_state:
         Doctor("008", "Mazen Tarek", "Male", "01000888888", 32, 5, "Neurology", 8, 350),
     ]
 
+# إضافة متغيرات جديدة للـ appointments والـ patients (لو مش موجودة)
+if "appointments" not in st.session_state:
+    st.session_state.appointments = []
+if "patients" not in st.session_state:
+    st.session_state.patients = []
+
 if "manager_logged" not in st.session_state:
     st.session_state.manager_logged = False
 
@@ -128,53 +129,63 @@ def manager_login():
                 st.error("Wrong username or password")
 
 # ======================================================
-# Dashboard (بدون أي card أبيض)
+# Dashboard (مع إضافة الـ tabs الجديدة)
 # ======================================================
 def manager_dashboard():
     st.markdown("<div class='main-title'>🛠 Admin Dashboard</div>", unsafe_allow_html=True)
     st.markdown("<div class='sub-title'>Manage Doctors & Clinic System</div>", unsafe_allow_html=True)
 
-    # Sidebar بدون صورة
+    # Sidebar
     st.sidebar.title("🏥 Cure & Go Clinic")
-    
     if st.sidebar.button("🚪 Logout"):
         st.session_state.manager_logged = False
         st.rerun()
 
-    tab1, tab2, tab3, tab4 = st.tabs([
-        "👨‍⚕️ Doctors",
-        "➕ Add Doctor",
-        "❌ Delete Doctor",
-        "📊 Statistics"
+    # 7 Tabs الجديدة
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+        "👨‍⚕️ Doctors", "➕ Add Doctor", "❌ Delete Doctor",
+        "🗓️ Schedules", "📆 Appointments", "👥 Patients", "📊 Statistics"
     ])
 
-    # Tab 1: Doctors - مباشرة بدون card
+    # Tab 1: Doctors + Edit Doctor
     with tab1:
         doctors_data = [{
-            "ID": d.doctor_id,
-            "Name": d.name,
-            "Gender": d.gender,
-            "Phone": d.phone,
-            "Age": d.age,
-            "Experience": d.exp,
-            "Specialization": d.specialization,
-            "Room": d.room,
-            "Price": d.price
+            "ID": d.doctor_id, "Name": d.name, "Gender": d.gender, "Phone": d.phone,
+            "Age": d.age, "Experience": d.exp, "Specialization": d.specialization,
+            "Room": d.room, "Price": d.price
         } for d in st.session_state.doctors]
-
         st.table(doctors_data)
 
-    # Tab 2: Add Doctor - مباشرة بدون card
+        st.markdown("---")
+        st.subheader("Edit Doctor Information")
+        options = [f"{d.doctor_id} - {d.name}" for d in st.session_state.doctors]
+        selected = st.selectbox("Select Doctor to Edit", options)
+        selected_id = selected.split(" - ")[0]
+        selected_doc = next(d for d in st.session_state.doctors if d.doctor_id == selected_id)
+
+        col1, col2 = st.columns(2)
+        with col1:
+            new_name = st.text_input("Name", value=selected_doc.name)
+            new_phone = st.text_input("Phone", value=selected_doc.phone)
+        with col2:
+            new_price = st.number_input("Price", min_value=100, max_value=500, value=selected_doc.price)
+
+        if st.button("Save Changes"):
+            selected_doc.name = new_name
+            selected_doc.phone = new_phone
+            selected_doc.price = new_price
+            st.success("Doctor updated successfully!")
+            st.rerun()
+
+    # Tab 2 & 3: Add & Delete (زي ما كانوا)
     with tab2:
         with st.form("add_doctor"):
             col1, col2 = st.columns(2)
-
             with col1:
                 name = st.text_input("Doctor Name")
                 gender = st.selectbox("Gender", ["Male", "Female"])
                 phone = st.text_input("Phone")
                 age = st.number_input("Age", min_value=25, max_value=60)
-
             with col2:
                 specialization = st.text_input("Specialization")
                 exp = st.number_input("Experience (Years)", min_value=0)
@@ -191,33 +202,57 @@ def manager_dashboard():
                 st.success("Doctor Added Successfully")
                 st.rerun()
 
-    # Tab 3: Delete Doctor - مباشرة بدون card
     with tab3:
         options = [f"{d.doctor_id} - {d.name}" for d in st.session_state.doctors]
         selected = st.selectbox("Select Doctor", options)
-
         if st.button("Delete Doctor"):
             selected_id = selected.split(" - ")[0]
-            st.session_state.doctors = [
-                d for d in st.session_state.doctors if d.doctor_id != selected_id
-            ]
+            st.session_state.doctors = [d for d in st.session_state.doctors if d.doctor_id != selected_id]
             st.success("Doctor Deleted Successfully")
             st.rerun()
 
-    # Tab 4: Statistics - مباشرة بدون card
+    # Tab 4: Schedules (جديد)
     with tab4:
-        col1, col2 = st.columns(2)
+        st.subheader("Doctors' Schedules Summary")
+        if st.session_state.doctors:
+            for doc in st.session_state.doctors:
+                with st.expander(f"{doc.name} - {doc.specialization} (Room {doc.room})"):
+                    st.write("Schedule not fully implemented yet (placeholder for future hours)")
+        else:
+            st.info("No doctors available.")
 
+    # Tab 5: Appointments (جديد)
+    with tab5:
+        st.subheader("All Appointments")
+        if st.session_state.appointments:
+            st.table(st.session_state.appointments)
+        else:
+            st.info("No appointments booked yet.")
+
+    # Tab 6: Patients (جديد)
+    with tab6:
+        st.subheader("Registered Patients")
+        if st.session_state.patients:
+            st.table(st.session_state.patients)
+        else:
+            st.info("No patients registered yet.")
+
+    # Tab 7: Statistics (موسع)
+    with tab7:
+        st.subheader("Clinic Statistics")
+        col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("Total Doctors", len(st.session_state.doctors))
         with col2:
-            st.metric("Total Rooms", max(d.room for d in st.session_state.doctors) if st.session_state.doctors else 0)
+            st.metric("Total Appointments", len(st.session_state.appointments))
+        with col3:
+            st.metric("Registered Patients", len(st.session_state.patients))
 
-        spec_count = {}
-        for d in st.session_state.doctors:
-            spec_count[d.specialization] = spec_count.get(d.specialization, 0) + 1
-
-        st.bar_chart(spec_count)
+        if st.session_state.doctors:
+            spec_count = {}
+            for d in st.session_state.doctors:
+                spec_count[d.specialization] = spec_count.get(d.specialization, 0) + 1
+            st.bar_chart(spec_count)
 
 # ======================================================
 # Main
